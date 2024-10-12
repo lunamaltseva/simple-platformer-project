@@ -4,20 +4,35 @@
 #include <cstdlib>
 #include "raylib.h"
 
-char get_colliding_object(float x, float y, level &level) {
+bool is_colliding_object(float x, float y, char lookOut = '#', level &level = current_level) {
     const float size = 1;
     Rectangle a = {x, y, size, size};
 
     for (size_t row = 0; row < level.rows; ++row) {
         for (size_t column = 0; column < level.columns; ++column) {
-            if (level.data[row * level.columns + column] != ' ') {
+            if (level.data[row * level.columns + column] == lookOut) {
+                Rectangle b = {(float) column, (float) row, (float) size, (float) size};
+                if (CheckCollisionRecs(a, b))
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
+char& get_colliding_object(float x, float y, char lookOut, level &level = current_level) {
+    const float size = 1;
+    Rectangle a = {x, y, size, size};
+
+    for (size_t row = 0; row < level.rows; ++row) {
+        for (size_t column = 0; column < level.columns; ++column) {
+            if (level.data[row * level.columns + column] == lookOut) {
                 Rectangle b = {(float) column, (float) row, (float) size, (float) size};
                 if (CheckCollisionRecs(a, b))
                     return level.data[row * level.columns + column];
             }
         }
     }
-    return '\0';
 }
 
 float rand_from_to(float from, float to) {

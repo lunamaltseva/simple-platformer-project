@@ -9,6 +9,8 @@
 
 void load_images() {
     wall_image        = LoadTexture("data/images/wall.png");
+    exit_image        = LoadTexture("data/images/exit.png");
+    coin_image        = LoadTexture("data/images/coin.png");
     player_sprite     = load_sprite("data/images/player/player", ".png", 11);
 }
 
