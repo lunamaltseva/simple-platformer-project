@@ -9,13 +9,11 @@
 
 void load_images() {
     wall_image        = LoadTexture("data/images/wall.png");
-    floor_image       = LoadTexture("data/images/floor.png");
     player_sprite     = load_sprite("data/images/player/player", ".png", 11);
 }
 
 void unload_images() {
     UnloadTexture(wall_image);
-    UnloadTexture(floor_image);
     unload_sprite(player_sprite);
 }
 
