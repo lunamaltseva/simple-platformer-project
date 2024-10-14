@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include <iostream>
 
 #include "globals.h"
 #include "images.h"
@@ -8,38 +9,22 @@
 #include "utilities.h"
 
 void update_game() {
-    if (IsKeyDown(KEY_SPACE) && is_colliding_object(player_hitbox_offset.x, player_hitbox_offset.y + 0.1f, WALL)) {
-        player_gravity_velocity = -0.3f;
+    game_frame++;
+
+    if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
+        move_player_horizontally(movement_speed);
     }
 
-    if (IsKeyDown(KEY_D) && !is_colliding_object(player_hitbox_offset.x + 0.05f, player_hitbox_offset.y, WALL)) {
-        player_hitbox_offset.x+=0.1f;
+    if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
+        move_player_horizontally(-movement_speed);
     }
 
-    if (IsKeyDown(KEY_A) && !is_colliding_object(player_hitbox_offset.x - 0.05f, player_hitbox_offset.y, WALL)) {
-        player_hitbox_offset.x-=0.1f;
+    bool is_player_on_ground = is_colliding({player_pos.x, player_pos.y + 0.1f}, WALL);
+    if ((IsKeyDown(KEY_UP) || IsKeyDown(KEY_W) || IsKeyDown(KEY_SPACE)) && is_player_on_ground) {
+        player_y_velocity = -jump_strength;
     }
 
-
-    player_hitbox_offset.y += player_gravity_velocity;
-    player_gravity_velocity += playerGravity;
-
-    if (is_colliding_object(player_hitbox_offset.x, player_hitbox_offset.y + 0.1f, WALL)) {
-        player_gravity_velocity = 0;
-        player_hitbox_offset.y = roundf(player_hitbox_offset.y);
-    }
-
-    if (is_colliding_object(player_hitbox_offset.x, player_hitbox_offset.y, WALL)) {
-        player_hitbox_offset.x = roundf(player_hitbox_offset.x);
-    }
-
-    if (is_colliding_object(player_hitbox_offset.x, player_hitbox_offset.y, COIN)) {
-        get_colliding_object(player_hitbox_offset.x, player_hitbox_offset.y, COIN) = ' ';
-    }
-
-    if (is_colliding_object(player_hitbox_offset.x, player_hitbox_offset.y, EXIT)) {
-        load_level(1);
-    }
+    update_player();
 }
 
 void draw_game() {
@@ -57,8 +42,6 @@ int main() {
     load_level();
 
     while (!WindowShouldClose()) {
-        game_frame++;
-
         BeginDrawing();
         ClearBackground(BLACK);
 

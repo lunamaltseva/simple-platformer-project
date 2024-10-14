@@ -48,8 +48,8 @@ void draw_level() {
 }
 
 void draw_player() {
-    float x = shift_to_center_cell_by_x + player_hitbox_offset.x * cell_size;
-    float y = shift_to_center_cell_by_y + player_hitbox_offset.y * cell_size;
+    float x = shift_to_center_cell_by_x + player_pos.x * cell_size;
+    float y = shift_to_center_cell_by_y + player_pos.y * cell_size;
     draw_sprite(player_sprite, x, y, cell_size);
 }
 
