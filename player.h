@@ -41,9 +41,11 @@ void update_player() {
     if (is_colliding(player_pos, COIN)) {
         get_collider(player_pos, COIN) = ' ';
         player_score+=10;
+        PlaySound(coin_sound);
     }
     if (is_colliding(player_pos, EXIT)) {
         load_level(1);
+        PlaySound(exit_sound);
     }
 }
 

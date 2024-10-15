@@ -85,9 +85,11 @@ int main() {
     SetTargetFPS(60);
     ToggleFullscreen();
     HideCursor();
+    InitAudioDevice();
 
-    load_images();
     load_fonts();
+    load_images();
+    load_sounds();
     load_level();
 
     while (!WindowShouldClose()) {
@@ -98,6 +100,8 @@ int main() {
 
         EndDrawing();
     }
+
+    CloseAudioDevice();
     CloseWindow();
 
     return 0;

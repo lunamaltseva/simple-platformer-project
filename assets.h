@@ -100,4 +100,9 @@ void draw_sprite(sprite &sprite, float x, float y, float width, float height) {
     sprite.prev_game_frame = game_frame;
 }
 
+void load_sounds() {
+    coin_sound = LoadSound("data/sounds/coin.wav");
+    exit_sound = LoadSound("data/sounds/exit.wav");
+}
+
 #endif // IMAGES_H

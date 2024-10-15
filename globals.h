@@ -135,6 +135,11 @@ struct sprite {
 sprite coin_sprite;
 sprite player_sprite;
 
+/* Sounds */
+
+Sound coin_sound;
+Sound exit_sound;
+
 /* Text */
 
 Font menu_font;
