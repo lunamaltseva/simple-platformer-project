@@ -33,6 +33,8 @@ char& get_collider(Vector2 pos, char look_for, level &level) {
             }
         }
     }
+
+    return level.data[static_cast<int>(roundf(pos.y) * level.columns + roundf(pos.x))];
 }
 
 float rand_from_to(float from, float to) {

@@ -3,6 +3,17 @@
 
 #include "globals.h"
 
+void draw_text(Text &text) {
+    Vector2 dimensions = MeasureTextEx(*text.font, text.str.c_str(), text.size * screen_scale, text.spacing);
+
+    Vector2 pos = {
+            (screen_width * text.position.x) - (0.5f * dimensions.x),
+            (screen_height * text.position.y) - (0.5f * dimensions.y)
+    };
+
+    DrawTextEx(*text.font, text.str.c_str(), pos, dimensions.y, text.spacing, text.color);
+}
+
 void derive_graphics_metrics_from_loaded_level() {
     screen_width  = static_cast<float>(GetScreenWidth());
     screen_height = static_cast<float>(GetScreenHeight());
@@ -21,6 +32,28 @@ void derive_graphics_metrics_from_loaded_level() {
     shift_to_center_cell_by_y = (screen_height - level_height) * 0.5f;
 }
 
+void draw_menu() {
+    draw_text(game_title);
+    draw_text(game_subtitle);
+}
+
+void draw_GUI() {
+    Text score = {
+            "Score: " + std::to_string(player_score),
+            {0.50f, 0.05f},
+            48.0f
+    };
+    Text score_shadow = {
+            "Score: " + std::to_string(player_score),
+            {0.505f, 0.055f},
+            48.0f,
+            GRAY
+    };
+
+    draw_text(score_shadow);
+    draw_text(score);
+}
+
 void draw_level() {
     for (size_t row = 0; row < current_level.rows; ++row) {
         for (size_t column = 0; column < current_level.columns; ++column) {
@@ -33,7 +66,7 @@ void draw_level() {
                     draw_image(wall_image, x, y, cell_size);
                     break;
                 case COIN:
-                    draw_image(coin_image, x, y, cell_size);
+                    draw_sprite(coin_sprite, x, y, cell_size);
                     break;
                 case EXIT:
                     draw_image(exit_image, x, y, cell_size);
@@ -51,6 +84,68 @@ void draw_player() {
     float x = shift_to_center_cell_by_x + player_pos.x * cell_size;
     float y = shift_to_center_cell_by_y + player_pos.y * cell_size;
     draw_sprite(player_sprite, x, y, cell_size);
+}
+
+void draw_pause_menu() {
+    draw_text(game_paused);
+}
+
+void create_victory_menu_background() {
+    for (auto &ball : victory_balls) {
+        ball.x  = rand_up_to(screen_width);
+        ball.y  = rand_up_to(screen_height);
+        ball.dx = rand_from_to(-VICTORY_BALL_MAX_SPEED, VICTORY_BALL_MAX_SPEED);
+        ball.dx *= screen_scale;
+        if (abs(ball.dx) < 0E-1) ball.dx = 1.0f;
+        ball.dy = rand_from_to(-VICTORY_BALL_MAX_SPEED, VICTORY_BALL_MAX_SPEED);
+        ball.dy *= screen_scale;
+        if (abs(ball.dy) < 0E-1) ball.dy = 1.0f;
+        ball.radius = rand_from_to(VICTORY_BALL_MIN_RADIUS, VICTORY_BALL_MAX_RADIUS);
+        ball.radius *= screen_scale;
+    }
+
+    /* Clear both the front buffer and the back buffer to avoid ghosting of the game graphics. */
+    ClearBackground(BLACK);
+    EndDrawing();
+    BeginDrawing();
+    ClearBackground(BLACK);
+    EndDrawing();
+    BeginDrawing();
+}
+
+void animate_victory_menu_background() {
+    for (auto &ball : victory_balls) {
+        ball.x += ball.dx;
+        if (ball.x - ball.radius < 0 ||
+            ball.x + ball.radius >= screen_width) {
+            ball.dx = -ball.dx;
+        }
+        ball.y += ball.dy;
+        if (ball.y - ball.radius < 0 ||
+            ball.y + ball.radius >= screen_height) {
+            ball.dy = -ball.dy;
+        }
+    }
+}
+
+void draw_victory_menu_background() {
+    for (auto &ball : victory_balls) {
+        DrawCircleV({ ball.x, ball.y }, ball.radius, VICTORY_BALL_COLOR);
+    }
+}
+
+void draw_victory_menu() {
+    DrawRectangle(
+            0, 0,
+            static_cast<int>(screen_width), static_cast<int>(screen_height),
+            { 0, 0, 0, VICTORY_BALL_TRAIL_TRANSPARENCY }
+    );
+
+    animate_victory_menu_background();
+    draw_victory_menu_background();
+
+    draw_text(victory_title);
+    draw_text(victory_subtitle);
 }
 
 #endif //GRAPHICS_H

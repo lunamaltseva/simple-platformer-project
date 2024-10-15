@@ -7,10 +7,18 @@
 #include <string>
 #include <cassert>
 
+void load_fonts() {
+    menu_font = LoadFontEx("data/fonts/SuperMario256.ttf", 256, nullptr, 128);
+}
+
+void unload_fonts() {
+    UnloadFont(menu_font);
+}
+
 void load_images() {
     wall_image        = LoadTexture("data/images/wall.png");
     exit_image        = LoadTexture("data/images/exit.png");
-    coin_image        = LoadTexture("data/images/coin.png");
+    coin_sprite       = load_sprite("data/images/coin/coin",     ".png", 3, true, 18);
     player_sprite     = load_sprite("data/images/player/player", ".png", 3, true, 10);
 }
 
