@@ -24,22 +24,27 @@ void move_player_horizontally(float delta) {
 }
 
 void update_player() {
+    // In THIS very order: first add velocity to position, then gravity to velocity
+    // Why? I don't know! But it is glitchy otherwise.
     player_pos.y += player_y_velocity;
-    player_y_velocity += gravity;
+    player_y_velocity += GRAVITY_FORCE;
 
+    // Calculating collisions to see if the player hit the ceiling
     is_player_on_ground = is_colliding({player_pos.x, player_pos.y + 0.1f}, WALL);
     if (is_player_on_ground) {
         player_y_velocity = 0;
         player_pos.y = roundf(player_pos.y);
     }
 
+    // This generally doesn't happen, but better safe than sorry
     bool is_player_in_wall = is_colliding({player_pos.x, player_pos.y}, WALL);
     if (is_player_in_wall) {
         player_pos.x = roundf(player_pos.x);
     }
 
+    // Interacting with other level elements
     if (is_colliding(player_pos, COIN)) {
-        get_collider(player_pos, COIN) = ' ';
+        get_collider(player_pos, COIN) = ' '; // Remove the coin
         player_score+=10;
         PlaySound(coin_sound);
     }

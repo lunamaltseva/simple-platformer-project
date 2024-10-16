@@ -7,29 +7,29 @@ void draw_text(Text &text) {
     Vector2 dimensions = MeasureTextEx(*text.font, text.str.c_str(), text.size * screen_scale, text.spacing);
 
     Vector2 pos = {
-            (screen_width * text.position.x) - (0.5f * dimensions.x),
-            (screen_height * text.position.y) - (0.5f * dimensions.y)
+        (screen_size.x * text.position.x) - (0.5f * dimensions.x),
+        (screen_size.y * text.position.y) - (0.5f * dimensions.y)
     };
 
     DrawTextEx(*text.font, text.str.c_str(), pos, dimensions.y, text.spacing, text.color);
 }
 
 void derive_graphics_metrics_from_loaded_level() {
-    screen_width  = static_cast<float>(GetScreenWidth());
-    screen_height = static_cast<float>(GetScreenHeight());
+    screen_size.x  = static_cast<float>(GetScreenWidth());
+    screen_size.y = static_cast<float>(GetScreenHeight());
 
     cell_size = std::min(
-            screen_width  / static_cast<float>(current_level.columns),
-            screen_height / static_cast<float>(current_level.rows)
+        screen_size.x / static_cast<float>(current_level.columns),
+        screen_size.y / static_cast<float>(current_level.rows)
     ) * CELL_SCALE;
     screen_scale = std::min(
-            screen_width,
-            screen_height
+        screen_size.x,
+        screen_size.y
     ) / SCREEN_SCALE_DIVISOR;
     float level_width  = static_cast<float>(current_level.columns) * cell_size;
     float level_height = static_cast<float>(current_level.rows)    * cell_size;
-    shift_to_center_cell_by_x = (screen_width - level_width)   * 0.5f;
-    shift_to_center_cell_by_y = (screen_height - level_height) * 0.5f;
+    shift_to_center.x = (screen_size.x - level_width) * 0.5f;
+    shift_to_center.y = (screen_size.y - level_height) * 0.5f;
 }
 
 void draw_menu() {
@@ -37,17 +37,17 @@ void draw_menu() {
     draw_text(game_subtitle);
 }
 
-void draw_GUI() {
+void draw_game_overlay() {
     Text score = {
-            "Score: " + std::to_string(player_score),
-            {0.50f, 0.05f},
-            48.0f
+        "Score " + std::to_string(player_score),
+        {0.50f, 0.05f},
+        48.0f
     };
     Text score_shadow = {
-            "Score: " + std::to_string(player_score),
-            {0.505f, 0.055f},
-            48.0f,
-            GRAY
+        "Score " + std::to_string(player_score),
+        {0.503f, 0.055f},
+        48.0f,
+        GRAY
     };
 
     draw_text(score_shadow);
@@ -57,19 +57,22 @@ void draw_GUI() {
 void draw_level() {
     for (size_t row = 0; row < current_level.rows; ++row) {
         for (size_t column = 0; column < current_level.columns; ++column) {
-            float x = shift_to_center_cell_by_x + static_cast<float>(column) * cell_size;
-            float y = shift_to_center_cell_by_y + static_cast<float>(row) * cell_size;
+
+            Vector2 pos = {
+                    shift_to_center.x + static_cast<float>(column) * cell_size,
+                    shift_to_center.y + static_cast<float>(row) * cell_size
+            };
 
             char cell = current_level.data[row * current_level.columns + column];
             switch (cell) {
                 case WALL:
-                    draw_image(wall_image, x, y, cell_size);
+                    draw_image(wall_image, pos, cell_size);
                     break;
                 case COIN:
-                    draw_sprite(coin_sprite, x, y, cell_size);
+                    draw_sprite(coin_sprite, pos, cell_size);
                     break;
                 case EXIT:
-                    draw_image(exit_image, x, y, cell_size);
+                    draw_image(exit_image, pos, cell_size);
                     break;
                 default:
                     break;
@@ -81,9 +84,12 @@ void draw_level() {
 }
 
 void draw_player() {
-    float x = shift_to_center_cell_by_x + player_pos.x * cell_size;
-    float y = shift_to_center_cell_by_y + player_pos.y * cell_size;
-    draw_sprite(player_sprite, x, y, cell_size);
+    Vector2 pos = {
+            shift_to_center.x + player_pos.x * cell_size,
+            shift_to_center.y + player_pos.y * cell_size
+    };
+
+    draw_sprite(player_sprite, pos, cell_size);
 }
 
 void draw_pause_menu() {
@@ -92,8 +98,8 @@ void draw_pause_menu() {
 
 void create_victory_menu_background() {
     for (auto &ball : victory_balls) {
-        ball.x  = rand_up_to(screen_width);
-        ball.y  = rand_up_to(screen_height);
+        ball.x  = rand_up_to(screen_size.x);
+        ball.y  = rand_up_to(screen_size.y);
         ball.dx = rand_from_to(-VICTORY_BALL_MAX_SPEED, VICTORY_BALL_MAX_SPEED);
         ball.dx *= screen_scale;
         if (abs(ball.dx) < 0E-1) ball.dx = 1.0f;
@@ -117,12 +123,12 @@ void animate_victory_menu_background() {
     for (auto &ball : victory_balls) {
         ball.x += ball.dx;
         if (ball.x - ball.radius < 0 ||
-            ball.x + ball.radius >= screen_width) {
+            ball.x + ball.radius >= screen_size.x) {
             ball.dx = -ball.dx;
         }
         ball.y += ball.dy;
         if (ball.y - ball.radius < 0 ||
-            ball.y + ball.radius >= screen_height) {
+            ball.y + ball.radius >= screen_size.y) {
             ball.dy = -ball.dy;
         }
     }
@@ -136,9 +142,9 @@ void draw_victory_menu_background() {
 
 void draw_victory_menu() {
     DrawRectangle(
-            0, 0,
-            static_cast<int>(screen_width), static_cast<int>(screen_height),
-            { 0, 0, 0, VICTORY_BALL_TRAIL_TRANSPARENCY }
+        0, 0,
+        static_cast<int>(screen_size.x), static_cast<int>(screen_size.y),
+        { 0, 0, 0, VICTORY_BALL_TRAIL_TRANSPARENCY }
     );
 
     animate_victory_menu_background();

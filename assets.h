@@ -8,7 +8,7 @@
 #include <cassert>
 
 void load_fonts() {
-    menu_font = LoadFontEx("data/fonts/SuperMario256.ttf", 256, nullptr, 128);
+    menu_font = LoadFontEx("data/fonts/ARCADE_N.ttf", 256, nullptr, 128);
 }
 
 void unload_fonts() {
@@ -24,16 +24,18 @@ void load_images() {
 
 void unload_images() {
     UnloadTexture(wall_image);
+    UnloadTexture(exit_image);
     unload_sprite(player_sprite);
+    unload_sprite(coin_sprite);
 }
 
-void draw_image(Texture2D image, float x, float y, float size) {
-    draw_image(image, x, y, size, size);
+void draw_image(Texture2D image, Vector2 pos, float size) {
+    draw_image(image, pos, size, size);
 }
 
-void draw_image(Texture2D image, float x, float y, float width, float height) {
+void draw_image(Texture2D image, Vector2 pos, float width, float height) {
     Rectangle source = { 0.0f, 0.0f, static_cast<float>(image.width), static_cast<float>(image.height) };
-    Rectangle destination = { x, y, width, height };
+    Rectangle destination = { pos.x, pos.y, width, height };
     DrawTexturePro(image, source, destination, { 0.0f, 0.0f }, 0.0f, WHITE);
 }
 
@@ -77,12 +79,12 @@ void unload_sprite(sprite &sprite) {
     sprite.frames = nullptr;
 }
 
-void draw_sprite(sprite &sprite, float x, float y, float size) {
-    draw_sprite(sprite, x, y, size, size);
+void draw_sprite(sprite &sprite, Vector2 pos, float size) {
+    draw_sprite(sprite, pos, size, size);
 }
 
-void draw_sprite(sprite &sprite, float x, float y, float width, float height) {
-    draw_image(sprite.frames[sprite.frame_index], x, y, width, height);
+void draw_sprite(sprite &sprite, Vector2 pos, float width, float height) {
+    draw_image(sprite.frames[sprite.frame_index], pos, width, height);
 
     if (sprite.prev_game_frame == game_frame) {
         return;
@@ -103,6 +105,11 @@ void draw_sprite(sprite &sprite, float x, float y, float width, float height) {
 void load_sounds() {
     coin_sound = LoadSound("data/sounds/coin.wav");
     exit_sound = LoadSound("data/sounds/exit.wav");
+}
+
+void unload_sounds() {
+    UnloadSound(coin_sound);
+    UnloadSound(exit_sound);
 }
 
 #endif // IMAGES_H

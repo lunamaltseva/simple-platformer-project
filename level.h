@@ -3,7 +3,7 @@
 
 #include "globals.h"
 
-void load_level(int offset = 0) {
+void load_level(int offset) {
     level_index += offset;
 
     if (level_index >= LEVEL_COUNT) {
@@ -27,6 +27,10 @@ void load_level(int offset = 0) {
 
     spawn_player();
     derive_graphics_metrics_from_loaded_level();
+}
+
+void unload_level() {
+    delete[] current_level_data;
 }
 
 #endif //LEVEL_H

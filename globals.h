@@ -2,6 +2,7 @@
 #define GLOBALS_H
 
 #include "raylib.h"
+
 #include <string>
 #include <cstddef>
 
@@ -75,47 +76,86 @@ level LEVEL_3 = {
     LEVEL_3_DATA
 };
 
-level current_level;
 int level_index = 0;
-char *current_level_data;
 const int LEVEL_COUNT = 3;
 
 level LEVELS[LEVEL_COUNT] = {
         LEVEL_1, LEVEL_2, LEVEL_3
 };
 
+/* Loaded Level Data */
+
+level current_level;
+char *current_level_data;
+
 /* Player data */
 
-Vector2 player_pos;
-int player_score = 0;
-float player_y_velocity = 0;
-bool is_player_on_ground;
-const float gravity = 0.01f;
-const float jump_strength = 0.3f;
-const float movement_speed = 0.1f;
+const float GRAVITY_FORCE = 0.01f;
+const float JUMP_STRENGTH = 0.3f;
+const float MOVEMENT_SPEED = 0.1f;
 
-/* Drawing accessories */
+Vector2 player_pos;
+float player_y_velocity = 0;
+
+bool is_player_on_ground;
+
+int player_score = 0;
+
+/* Graphic Metrics */
 
 const float CELL_SCALE = 0.8f; // An aesthetic parameter to add some negative space around level
 const float SCREEN_SCALE_DIVISOR = 700.0f; // The divisor was found through experimentation
-// to scale things accordingly to look pleasant.
+                                           // to scale things accordingly to look pleasant.
 
-float screen_width;
-float screen_height;
-float screen_scale; // Used to scale str/UI components size and displacements based on the screen size
+Vector2 screen_size;
+float screen_scale; // Used to scale str/UI components size and displacements based on the screen_size size
 float cell_size;
-float shift_to_center_cell_by_x;
-float shift_to_center_cell_by_y;
+Vector2 shift_to_center;
 
-/* Game States */
+/* Fonts */
 
-enum game_state {
-    MENU_STATE,
-    GAME_STATE,
-    PAUSED_STATE,
-    VICTORY_STATE
+Font menu_font;
+
+/* Display Text Parameters */
+
+// Going off of personal experience, a basic text class is THE building block of a raylib game
+// I hope that by providing them with this basic thingy, they'll build more sophisticated stuff from it
+struct Text {
+    std::string str;
+    Vector2 position = {0.50f, 0.50f};
+    float size = 32.0f;
+    Color color = WHITE;
+    float spacing = 4.0f;
+    Font* font = &menu_font;
 };
-game_state game_state = MENU_STATE;
+
+Text game_title = {
+    "Platformer",
+    {0.50f, 0.50f},
+    100.0f,
+    RED
+};
+
+Text game_subtitle = {
+    "Press Enter to Start",
+    {0.50f, 0.65f}
+};
+
+Text game_paused = {
+    "Press Escape to Resume"
+};
+
+Text victory_title = {
+    "You Won!",
+    {0.50f, 0.50f},
+    100.0f,
+    RED
+};
+
+Text victory_subtitle = {
+    "Press Enter to go back to menu",
+    {0.50f, 0.65f}
+};
 
 /* Images and Sprites */
 
@@ -140,51 +180,6 @@ sprite player_sprite;
 Sound coin_sound;
 Sound exit_sound;
 
-/* Text */
-
-Font menu_font;
-
-struct Text {
-    std::string str;
-    Vector2 position = {0.50f, 0.50f};
-    float size = 32.0f;
-    Color color = WHITE;
-    float spacing = 4.0f;
-    Font* font = &menu_font;
-};
-
-Text game_title = {
-        "Platformer",
-        {0.50f, 0.50f},
-        120.0f,
-        RED
-};
-
-Text game_subtitle = {
-        "Press Enter to Start",
-        {0.50f, 0.65f}
-};
-
-Text game_paused = {
-        "Press Escape to Resume"
-};
-
-Text victory_title = {
-        "You Won!",
-        {0.50f, 0.50f},
-        120.0f,
-        RED
-};
-
-Text victory_subtitle = {
-        "Press Enter to go back to menu",
-        {0.50f, 0.65f}
-};
-
-/* Frame Counter */
-
-size_t game_frame = 0;
-
 /* Victory Menu Background */
 
 struct victory_ball {
@@ -201,36 +196,77 @@ const Color VICTORY_BALL_COLOR      = { 180, 180, 180, 255 };
 const unsigned char VICTORY_BALL_TRAIL_TRANSPARENCY = 10;
 victory_ball victory_balls[VICTORY_BALL_COUNT];
 
+/* Frame Counter */
+
+size_t game_frame = 0;
+
+/* Game States */
+
+enum game_state {
+    MENU_STATE,
+    GAME_STATE,
+    PAUSED_STATE,
+    VICTORY_STATE
+};
+game_state game_state = MENU_STATE;
+
 /* Forward Declarations */
 
 // GRAPHICS_H
 
+void draw_text(Text &text);
 void derive_graphics_metrics_from_loaded_level();
-void create_victory_menu_background();
-void draw_image(Texture2D image, float x, float y, float width, float height);
-void draw_image(Texture2D image, float x, float y, float size);
-
-sprite load_sprite(
-    const std::string &file_name_prefix,
-    const std::string &file_name_suffix,
-    size_t frame_count = 1,
-    bool loop = true,
-    size_t frames_to_skip = 3
-);
-void unload_sprite(sprite &sprite);
-void draw_sprite(sprite &sprite, float x, float y, float width, float height);
-void draw_sprite(sprite &sprite, float x, float y, float size);
+void draw_menu();
+void draw_game_overlay();
+void draw_level();
 void draw_player();
+void draw_pause_menu();
+void create_victory_menu_background();
+void animate_victory_menu_background();
+void draw_victory_menu_background();
+void draw_victory_menu();
+
+// LEVEL_H
+
+void load_level(int offset = 0);
+void unload_level();
 
 // PLAYER_H
 
 void spawn_player();
+void move_player_horizontally(float delta);
+void update_player();
+
+// ASSETS_H
+
+void load_fonts();
+void unload_fonts();
+
+void load_images();
+void unload_images();
+
+void draw_image(Texture2D image, Vector2 pos, float width, float height);
+void draw_image(Texture2D image, Vector2 pos, float size);
+
+sprite load_sprite(
+        const std::string &file_name_prefix,
+        const std::string &file_name_suffix,
+        size_t frame_count = 1,
+        bool loop = true,
+        size_t frames_to_skip = 3
+);
+void unload_sprite(sprite &sprite);
+void draw_sprite(sprite &sprite, Vector2 pos, float width, float height);
+void draw_sprite(sprite &sprite, Vector2 pos, float size);
+
+void load_sounds();
+void unload_sounds();
 
 // UTILITIES_H
 
-float rand_from_to(float from, float to);
-float rand_up_to(float to);
 bool is_colliding(Vector2 pos, char look_for = '#', level &level = current_level);
 char& get_collider(Vector2 pos, char look_for, level &level = current_level);
+float rand_from_to(float from, float to);
+float rand_up_to(float to);
 
 #endif // GLOBALS_H
