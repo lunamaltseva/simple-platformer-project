@@ -228,6 +228,9 @@ void draw_victory_menu();
 
 // LEVEL_H
 
+bool is_colliding(Vector2 pos, char look_for = '#', level &level = current_level);
+char& get_collider(Vector2 pos, char look_for, level &level = current_level);
+
 void load_level(int offset = 0);
 void unload_level();
 
@@ -264,8 +267,6 @@ void unload_sounds();
 
 // UTILITIES_H
 
-bool is_colliding(Vector2 pos, char look_for = '#', level &level = current_level);
-char& get_collider(Vector2 pos, char look_for, level &level = current_level);
 float rand_from_to(float from, float to);
 float rand_up_to(float to);
 

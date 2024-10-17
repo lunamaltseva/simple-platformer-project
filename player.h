@@ -21,6 +21,8 @@ void move_player_horizontally(float delta) {
     float next_x = player_pos.x + delta;
     if (!is_colliding({next_x, player_pos.y}, WALL))
         player_pos.x = next_x;
+    else
+        player_pos.x = roundf(player_pos.x);
 }
 
 void update_player() {
@@ -34,12 +36,6 @@ void update_player() {
     if (is_player_on_ground) {
         player_y_velocity = 0;
         player_pos.y = roundf(player_pos.y);
-    }
-
-    // This generally doesn't happen, but better safe than sorry
-    bool is_player_in_wall = is_colliding({player_pos.x, player_pos.y}, WALL);
-    if (is_player_in_wall) {
-        player_pos.x = roundf(player_pos.x);
     }
 
     // Interacting with other level elements
