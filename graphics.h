@@ -64,10 +64,19 @@ void draw_level() {
             };
 
             char cell = current_level.data[row * current_level.columns + column];
-            switch (cell) {
+            switch(cell) {
+                case AIR:
+                case PLAYER:
+                case COIN:
+                case EXIT:
+                    draw_image(air_image, pos, cell_size);
+                    break;
                 case WALL:
                     draw_image(wall_image, pos, cell_size);
                     break;
+            }
+
+            switch (cell) {
                 case COIN:
                     draw_sprite(coin_sprite, pos, cell_size);
                     break;

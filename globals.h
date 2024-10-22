@@ -161,6 +161,7 @@ Text victory_subtitle = {
 /* Images and Sprites */
 
 Texture2D wall_image;
+Texture2D air_image;
 Texture2D exit_image;
 
 struct sprite {
