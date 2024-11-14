@@ -2,25 +2,11 @@
 #define GLOBALS_H
 
 #include "raylib.h"
+#include "lunalib.h"
 
 #include <string>
 #include <cstddef>
 #include <cmath>
-
-/* Game Elements */
-
-const char WALL   = '#';
-const char AIR    = ' ';
-const char PLAYER = '@';
-const char COIN   = '*';
-const char EXIT   = 'E';
-
-/* Levels */
-
-struct level {
-    size_t rows = 0, columns = 0;
-    char *data = nullptr;
-};
 
 char LEVEL_1_DATA[] = {
         '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
@@ -32,7 +18,7 @@ char LEVEL_1_DATA[] = {
         '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'
 };
 
-level LEVEL_1 = {
+Level LEVEL_1 = {
         7, 11,
         LEVEL_1_DATA
 };
@@ -51,7 +37,7 @@ char LEVEL_2_DATA[] = {
         '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'
 };
 
-level LEVEL_2 = {
+Level LEVEL_2 = {
     11, 17,
     LEVEL_2_DATA
 };
@@ -72,22 +58,10 @@ char LEVEL_3_DATA[] = {
         '#', '#', '#', '#', '#', '#'
 };
 
-level LEVEL_3 = {
+Level LEVEL_3 = {
     13, 6,
     LEVEL_3_DATA
 };
-
-int level_index = 0;
-const int LEVEL_COUNT = 3;
-
-level LEVELS[LEVEL_COUNT] = {
-        LEVEL_1, LEVEL_2, LEVEL_3
-};
-
-/* Loaded Level Data */
-
-level current_level;
-char *current_level_data;
 
 /* Player data */
 
@@ -115,30 +89,17 @@ Vector2 shift_to_center;
 
 /* Fonts */
 
-Font menu_font;
-
-/* Display Text Parameters */
-
-// Going off of personal experience, a basic text class is THE building block of a raylib game
-// I hope that by providing them with this basic thingy, they'll build more sophisticated stuff from it
-struct Text {
-    std::string str;
-    Vector2 position = {0.50f, 0.50f};
-    float size = 32.0f;
-    Color color = WHITE;
-    float spacing = 4.0f;
-    Font* font = &menu_font;
-};
-
-Text game_title = {
+Text game_title(
     "Platformer",
-    {0.50f, 0.50f},
+    RED,
     100.0f,
-    RED
-};
+    {0.50f, 0.50f}
+);
 
 Text game_subtitle = {
     "Press Enter to Start",
+    WHITE,
+    50.0f,
     {0.50f, 0.65f}
 };
 
@@ -148,13 +109,15 @@ Text game_paused = {
 
 Text victory_title = {
     "You Won!",
-    {0.50f, 0.50f},
+    RED,
     100.0f,
-    RED
+    {0.50f, 0.50f},
 };
 
 Text victory_subtitle = {
     "Press Enter to go back to menu",
+    WHITE,
+    50.0f,
     {0.50f, 0.65f}
 };
 
@@ -198,10 +161,6 @@ const Color VICTORY_BALL_COLOR      = { 180, 180, 180, 255 };
 const unsigned char VICTORY_BALL_TRAIL_TRANSPARENCY = 10;
 victory_ball victory_balls[VICTORY_BALL_COUNT];
 
-/* Frame Counter */
-
-size_t game_frame = 0;
-
 /* Game States */
 
 enum game_state {
@@ -216,11 +175,9 @@ game_state game_state = MENU_STATE;
 
 // GRAPHICS_H
 
-void draw_text(Text &text);
 void derive_graphics_metrics_from_loaded_level();
 void draw_menu();
 void draw_game_overlay();
-void draw_level();
 void draw_player();
 void draw_pause_menu();
 void create_victory_menu_background();
@@ -230,15 +187,12 @@ void draw_victory_menu();
 
 // LEVEL_H
 
-bool is_colliding(Vector2 pos, char look_for = '#', level &level = current_level);
-char& get_collider(Vector2 pos, char look_for, level &level = current_level);
-
-void load_level(int offset = 0);
-void unload_level();
+bool is_colliding(Vector2 pos, char look_for = '#');
+char& get_collider(Vector2 pos, char look_for);
 
 // PLAYER_H
 
-void spawn_player();
+void spawn_player(size_t row, size_t column);
 void move_player_horizontally(float delta);
 void update_player();
 

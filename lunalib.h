@@ -1,0 +1,290 @@
+#ifndef LUNALIB_H
+#define LUNALIB_H
+
+#include "raylib.h"
+#include <string>
+#include <cstddef>
+#include <utility>
+#include <vector>
+#include <functional>
+#include <sstream>
+#include <fstream>
+#include <iostream>
+
+size_t game_frame = 0;
+size_t runtime = 0;
+
+bool mv_down() {
+    return (IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_D) || IsKeyPressed(KEY_RIGHT));
+}
+
+bool mv_up() {
+    return (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_A) || IsKeyPressed(KEY_LEFT));
+}
+
+bool mv_forward() {
+    return (IsKeyPressed(KEY_ENTER));
+}
+
+bool mv_back() {
+    return (IsKeyPressed(KEY_ESCAPE));
+}
+
+int key_recently_pressed = 0;
+bool is_key(int check) {
+    return IsKeyDown(check) && key_recently_pressed == check;
+}
+
+Font menu_font;
+
+class Text {
+public:
+    Text(const std::string text, Color color = WHITE, float size = 50.0f, Vector2 offset = {0.5f,0.5f}, float spacing = 4.0f, Font *font = &menu_font)
+            : text(text), color(color), size(size), font(font), spacing(spacing), offsetPercent(offset) {}
+    virtual void draw();
+    void reposition(Vector2 position) {
+        offsetPercent = position;
+    }
+protected:
+    std::string text;
+    float size, spacing;
+    Vector2 offsetPercent, dimensions;
+    Color color;
+    Font* font;
+
+    friend class Prompt;
+};
+
+class MultilineText : public Text {
+public:
+    MultilineText(const std::string text, Vector2 dOffset = {0.0f, 0.075f}, Color color = WHITE, float size = 50.0f, Vector2 offset = {0.5f,0.5f}, float spacing = 4.0f, Font *font = &menu_font)
+            : Text("", color, size, offset, spacing, font), dOffset(dOffset) {
+        std::stringstream stream(text);
+        while (!stream.eof()) {
+            std::string token;
+            std::getline(stream, token, '\n');
+            lines.push_back(token);
+        }
+    }
+    void draw() override;
+protected:
+    Vector2 dOffset;
+    std::vector<std::string> lines;
+
+    friend class Prompt;
+};
+
+class Prompt {
+public:
+    Prompt(std::string title, std::string contents)
+            : title(Text(title, WHITE, 70.0f)), contents(MultilineText(contents)) { }
+    void draw();
+private:
+    Text title;
+    MultilineText contents;
+    Text OK = Text("OK", WHITE, 40.0f);
+};
+
+void drawImage(Texture2D image, float x, float y, float width, float height);
+
+class Slide {
+public:
+    Slide(const std::string &text, const Texture2D picture)
+            : caption{Text(text, WHITE, 70.0f, {0.5f, 0.9f})}, picture{picture} { }
+    void draw() {
+        caption.draw();
+        float minimum = std::min(GetScreenHeight(), GetScreenWidth())*0.4f;
+        drawImage(picture, (GetScreenWidth() - (2 * minimum)) * 0.5f, (GetScreenHeight() - minimum) * 0.5f, 2 * minimum, minimum);
+    }
+private:
+    Text caption;
+    Texture2D picture;
+};
+
+extern int animationFrame;
+
+class Slideshow {
+public:
+    explicit Slideshow(int time) : timePerSlide(time) {}
+    explicit Slideshow(std::vector<Slide> slides, int time) : slides(std::move(slides)), timePerSlide(time) {}
+    void add(const Slide &slide) { slides.push_back(slide); }
+    int at() {
+        return itr;
+    }
+
+    bool draw() {
+        if (itr >= slides.size()) {
+            itr = 0;
+            return false;
+        }
+
+        animationFrame++;
+
+        slides[itr].draw();
+        if (animationFrame > 0 && animationFrame < 45) {
+            DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), {0,0,0, static_cast<unsigned char>(256-(animationFrame*(256.0f/45)))});
+        }
+        else if (animationFrame > timePerSlide-45 && animationFrame <= timePerSlide) {
+            DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), {0,0,0, static_cast<unsigned char>(((animationFrame-(timePerSlide-45))*(250.0f/45)))});
+        }
+
+        if (animationFrame >= timePerSlide) {
+            itr++;
+            animationFrame = 0;
+        }
+        return true;
+    }
+private:
+    int timePerSlide;
+    int itr = 0;
+    std::vector<Slide> slides;
+};
+
+struct vector2 {
+    vector2() : x(0), y(0) {};
+    vector2(size_t row, size_t column) : x(row), y(column) {}
+    size_t x, y;
+};
+
+class Level {
+public:
+    static const char WALL   = '#',
+                      AIR    = ' ',
+                      PLAYER = '@',
+                      COIN   = '*',
+                      EXIT   = 'E';
+
+    Level() {}
+    Level(size_t height, size_t width, char *data)
+            : rows(height), columns(width), data(data) { }
+
+    bool is_cell_inside(int row, int column);
+    char& get_cell(size_t row, size_t column);
+    void set_cell(size_t row, size_t column, char cell);
+    void if_solved();
+    int count(char object);
+
+    size_t height() { return rows; }
+    size_t width() { return columns; }
+    friend class LevelManager;
+private:
+    size_t rows, columns;
+    char *data;
+};
+
+struct levelStatistics {
+    size_t steps;
+    size_t time;
+};
+
+class LevelManager {
+public:
+    LevelManager();
+    static void add(Level &level) {levels.push_back(level);}
+
+    static Level* getInstance() {
+        if (instance == nullptr)
+            instance = new Level();
+        return instance;
+    }
+
+    static void load(size_t offset = 0);
+    static void unload();
+    static void reset() { index = 0; unload(); stats[0].steps = stats[1].steps = stats[2].steps = 0; }
+    static void forceComplete();
+    static size_t get_index() { return index; }
+    static size_t get_size()  { return levels.size(); }
+    static void draw();
+    static std::vector<levelStatistics> stats;
+
+    friend void tutorials();
+private:
+    static Level* instance;
+    static size_t index;
+    static std::vector<Level> levels;
+};
+
+Level* LevelManager::instance = nullptr;
+size_t LevelManager::index = 0;
+std::vector<Level> LevelManager::levels;
+std::vector<levelStatistics> LevelManager::stats(3);
+
+class Player {
+public:
+    void spawn(size_t row, size_t column);
+    void move_horizontally();
+    void update();
+    void draw();
+
+    size_t get_row() {return row;}
+    size_t get_column() {return column;}
+    Texture2D getImage() {return image;}
+    int getSteps() {return movements.size();}
+
+    ~Player() {
+        UnloadTexture(image);
+    }
+
+private:
+    size_t row, column;
+    Texture2D image;
+    std::vector<vector2> movements;
+    std::vector<bool> was_box_moved;
+};
+
+struct Option {
+    std::string text;
+    std::function<void()> forward;
+};
+
+extern Sound scroll;
+extern Sound forward;
+extern Sound backout;
+
+class Menu {
+public:
+    Menu(std::vector<Option> entry, std::function<void()> backward, Color colorActive = WHITE, Color colorInactive = GRAY, float size = 50.0f, Vector2 offset = {0.5f,0.5f}, Vector2 offsetAdd = {0.0f, 0.1f}, float spacing = 3.0f, Font *font = &menu_font)
+            : entry(entry), backward(backward), colorActive(colorActive), colorInactive(colorInactive), size(size), font(font), spacing(spacing), offsetPercentInitial(offset), offsetPercentAdditional(offsetAdd), selection(0) {}
+    void draw();
+    void run();
+    int selected() {return selection;}
+protected:
+    std::vector<Option> entry;
+    std::function<void()> backward;
+    int selection;
+    float size, spacing;
+    Vector2 offsetPercentInitial, offsetPercentAdditional;
+    Color colorActive, colorInactive;
+    Font* font;
+};
+
+struct Parameters {
+    int value;
+    enum values {key, speed};
+    values valueType;
+};
+
+class OptionsMenu : public Menu {
+public:
+    OptionsMenu(std::vector<Option> entry, std::function<void()> backward, Color colorActive = WHITE, Color colorInactive = GRAY, float size = 50.0f, Vector2 offset = {0.5f,0.5f}, Vector2 offsetAdd = {0.0f, 0.1f}, float spacing = 4.0f, Font *font = &menu_font)
+            : Menu(entry, backward, colorActive, colorInactive, size, offset, offsetAdd, spacing, font) {}
+
+    void draw();
+    int getKey();
+    void increaseDecrease();
+    void run();
+
+    char getChar(int index) {
+        return static_cast<char>(parameters[index].value);
+    }
+
+    int getValue(int index) {
+        return parameters[index].value;
+    }
+protected:
+    std::vector<Parameters> parameters = {{KEY_W, Parameters::key},{KEY_A, Parameters::key},{KEY_S, Parameters::key}, {KEY_D, Parameters::key}, {KEY_U, Parameters::key}, {4, Parameters::speed}};
+    bool selected;
+    float offset = 0.53f;
+};
+
+#endif //LUNALIB_H

@@ -3,84 +3,114 @@
 
 #include "globals.h"
 
-void draw_text(Text &text) {
-    Vector2 dimensions = MeasureTextEx(*text.font, text.str.c_str(), text.size * screen_scale, text.spacing);
+void Text::draw() {
+    dimensions = MeasureTextEx(*font, text.c_str(), size*((float)GetScreenHeight()/1080), spacing);
 
     Vector2 pos = {
-        (screen_size.x * text.position.x) - (0.5f * dimensions.x),
-        (screen_size.y * text.position.y) - (0.5f * dimensions.y)
+            (screen_size.x * offsetPercent.x) - (0.5f * dimensions.x) + 0.75f * ((cosf(rand() % 10 * game_frame) + sinf(rand() % 4 * game_frame))),
+            (screen_size.y * offsetPercent.y) - (0.5f * dimensions.y)
     };
+    DrawTextEx(*font, text.c_str(), pos, dimensions.y, spacing, color);
+}
 
-    DrawTextEx(*text.font, text.str.c_str(), pos, dimensions.y, text.spacing, text.color);
+void MultilineText::draw() {
+    for (int i = 0; i < lines.size(); i++) {
+        Text(lines[i], color, size, {offsetPercent.x+dOffset.x*i, offsetPercent.y+dOffset.y*i}, spacing, font).draw();
+    }
+}
+
+void Prompt::draw() {
+    Vector2 size = {0,0};
+    size.y = title.size +(contents.dOffset.y * screen_size.y * static_cast<float>(contents.lines.size()));
+    for (auto &el : contents.lines) {
+        if (MeasureTextEx(*contents.font, el.c_str(), contents.size, contents.spacing).x > size.x)
+            size.x = MeasureTextEx(*contents.font, el.c_str(), contents.size, contents.spacing).x;
+    }
+    Vector2 sizePercent = {((screen_size.x - size.x) * 0.5f) / screen_size.x, ((screen_size.y - size.y) * 0.5f) / screen_size.y};
+    title.reposition({0.5f, sizePercent.y});
+    contents.reposition({0.5f, sizePercent.y + ((title.size + 30.0f) / screen_size.y)});
+    OK.reposition({0.5f, ((size.y + screen_size.y) * 0.52f) / screen_size.y});
+
+    DrawRectangle((screen_size.x - size.x) * 0.5f - 80.0f, (screen_size.y - size.y) * 0.5f - 80.0f, size.x + 160.0f, size.y + 160.0f, BLACK);
+    DrawRectangleLinesEx({(screen_size.x - size.x) * 0.5f - 80.0f, (screen_size.y - size.y) * 0.5f - 80.0f, size.x + 160.0f, size.y + 160.0f}, 5.0f, WHITE);
+
+    title.draw();
+    contents.draw();
+    OK.draw();
 }
 
 void derive_graphics_metrics_from_loaded_level() {
+    Level* level = LevelManager::getInstance();
+
     screen_size.x  = static_cast<float>(GetScreenWidth());
     screen_size.y = static_cast<float>(GetScreenHeight());
 
     cell_size = std::min(
-        screen_size.x / static_cast<float>(current_level.columns),
-        screen_size.y / static_cast<float>(current_level.rows)
+        screen_size.x / static_cast<float>(level->width()),
+        screen_size.y / static_cast<float>(level->height())
     ) * CELL_SCALE;
     screen_scale = std::min(
         screen_size.x,
         screen_size.y
     ) / SCREEN_SCALE_DIVISOR;
-    float level_width  = static_cast<float>(current_level.columns) * cell_size;
-    float level_height = static_cast<float>(current_level.rows)    * cell_size;
+    float level_width  = static_cast<float>(level->width()) * cell_size;
+    float level_height = static_cast<float>(level->height())    * cell_size;
     shift_to_center.x = (screen_size.x - level_width) * 0.5f;
     shift_to_center.y = (screen_size.y - level_height) * 0.5f;
 }
 
 void draw_menu() {
-    draw_text(game_title);
-    draw_text(game_subtitle);
+    game_title.draw();
+    game_subtitle.draw();
 }
 
 void draw_game_overlay() {
-    Text score = {
+    Text score(
         "Score " + std::to_string(player_score),
-        {0.50f, 0.05f},
-        48.0f
-    };
-    Text score_shadow = {
-        "Score " + std::to_string(player_score),
-        {0.503f, 0.055f},
+        WHITE,
         48.0f,
-        GRAY
-    };
+        {0.50f, 0.05f}
+    );
+    Text score_shadow(
+        "Score " + std::to_string(player_score),
+        GRAY,
+        48.0f,
+        {0.503f, 0.055f}
+    );
 
-    draw_text(score_shadow);
-    draw_text(score);
+    score_shadow.draw();
+    score.draw();
 }
 
-void draw_level() {
-    for (size_t row = 0; row < current_level.rows; ++row) {
-        for (size_t column = 0; column < current_level.columns; ++column) {
+void LevelManager::draw() {
+    Level* level = LevelManager::getInstance();
+
+    for (size_t row = 0; row < level->rows; ++row) {
+        for (size_t column = 0; column < level->columns; ++column) {
 
             Vector2 pos = {
                     shift_to_center.x + static_cast<float>(column) * cell_size,
                     shift_to_center.y + static_cast<float>(row) * cell_size
             };
 
-            char cell = current_level.data[row * current_level.columns + column];
+            char cell = level->get_cell(row, column);
             switch(cell) {
-                case AIR:
-                case PLAYER:
-                case COIN:
-                case EXIT:
+                case Level::AIR:
+                case Level::PLAYER:
+                case Level::COIN:
+                case Level::EXIT:
                     draw_image(air_image, pos, cell_size);
                     break;
-                case WALL:
+                case Level::WALL:
                     draw_image(wall_image, pos, cell_size);
                     break;
             }
 
             switch (cell) {
-                case COIN:
+                case Level::COIN:
                     draw_sprite(coin_sprite, pos, cell_size);
                     break;
-                case EXIT:
+                case Level::EXIT:
                     draw_image(exit_image, pos, cell_size);
                     break;
                 default:
@@ -102,7 +132,7 @@ void draw_player() {
 }
 
 void draw_pause_menu() {
-    draw_text(game_paused);
+    game_paused.draw();
 }
 
 void create_victory_menu_background() {
@@ -159,8 +189,8 @@ void draw_victory_menu() {
     animate_victory_menu_background();
     draw_victory_menu_background();
 
-    draw_text(victory_title);
-    draw_text(victory_subtitle);
+    victory_title.draw();
+    victory_subtitle.draw();
 }
 
 #endif //GRAPHICS_H

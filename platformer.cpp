@@ -15,7 +15,7 @@ void update_game() {
             if (IsKeyPressed(KEY_ENTER)) {
                 SetExitKey(0);
                 game_state = GAME_STATE;
-                load_level(0);
+                LevelManager::load();
             }
             break;
 
@@ -29,7 +29,7 @@ void update_game() {
             }
 
             // Calculating collisions to decide whether the player is allowed to jump: don't want them to suction cup to the ceiling or jump midair
-            is_player_on_ground = is_colliding({player_pos.x, player_pos.y + 0.1f}, WALL);
+            is_player_on_ground = is_colliding({player_pos.x, player_pos.y + 0.1f}, Level::WALL);
             if ((IsKeyDown(KEY_UP) || IsKeyDown(KEY_W) || IsKeyDown(KEY_SPACE)) && is_player_on_ground) {
                 player_y_velocity = -JUMP_STRENGTH;
             }
@@ -65,7 +65,7 @@ void draw_game() {
 
         case GAME_STATE:
             ClearBackground(BLACK);
-            draw_level();
+            LevelManager::draw();
             draw_game_overlay();
             break;
 
@@ -88,10 +88,14 @@ int main() {
     HideCursor();
     InitAudioDevice();
 
+    LevelManager::add(LEVEL_1);
+    LevelManager::add(LEVEL_2);
+    LevelManager::add(LEVEL_3);
+
     load_fonts();
     load_images();
     load_sounds();
-    load_level();
+    LevelManager::load();
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -102,7 +106,7 @@ int main() {
         EndDrawing();
     }
 
-    unload_level();
+    LevelManager::unload();
     unload_sounds();
     unload_images();
     unload_fonts();
