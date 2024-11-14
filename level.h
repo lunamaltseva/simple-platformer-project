@@ -67,7 +67,7 @@ void LevelManager::load(size_t offset) {
             char cell = levels[index].data[row * level->columns + column];
             if (cell == Level::PLAYER) {
                 level->set_cell(row, column, Level::AIR);
-                spawn_player(row, column);
+                player.spawn(row, column);
             }
             else
                 level->set_cell(row, column, cell);

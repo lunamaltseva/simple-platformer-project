@@ -7,7 +7,7 @@ void Text::draw() {
     dimensions = MeasureTextEx(*font, text.c_str(), size*((float)GetScreenHeight()/1080), spacing);
 
     Vector2 pos = {
-            (screen_size.x * offsetPercent.x) - (0.5f * dimensions.x) + 0.75f * ((cosf(rand() % 10 * game_frame) + sinf(rand() % 4 * game_frame))),
+            (screen_size.x * offsetPercent.x) - (0.5f * dimensions.x),
             (screen_size.y * offsetPercent.y) - (0.5f * dimensions.y)
     };
     DrawTextEx(*font, text.c_str(), pos, dimensions.y, spacing, color);
@@ -68,18 +68,25 @@ void draw_game_overlay() {
     Text score(
         "Score " + std::to_string(player_score),
         WHITE,
-        48.0f,
+        40*screen_scale,
         {0.50f, 0.05f}
     );
     Text score_shadow(
         "Score " + std::to_string(player_score),
         GRAY,
-        48.0f,
+        40*screen_scale,
         {0.503f, 0.055f}
     );
 
     score_shadow.draw();
     score.draw();
+
+    float heartSize = 60 * screen_scale;
+    Vector2 heartsPosition = {(screen_size.x - heartSize*3) / 2, screen_size.y - heartSize};
+    for (int i = 0; i < player.get_lives(); i++) {
+        draw_image(heart_image, heartsPosition, heartSize);
+        heartsPosition.x += heartSize;
+    }
 }
 
 void LevelManager::draw() {
@@ -119,16 +126,25 @@ void LevelManager::draw() {
         }
     }
 
-    draw_player();
+    player.draw();
 }
 
-void draw_player() {
-    Vector2 pos = {
-            shift_to_center.x + player_pos.x * cell_size,
-            shift_to_center.y + player_pos.y * cell_size
+void Player::draw() {
+    Vector2 position = {
+            shift_to_center.x + pos.x * cell_size,
+            shift_to_center.y + pos.y * cell_size
     };
 
-    draw_sprite(player_sprite, pos, cell_size);
+    if (is_in_air) {
+        draw_image((is_looking_forward ? player_jump_forward_image : player_jump_backwards_image), position, cell_size);
+    }
+    else if (is_moving) {
+        draw_sprite((is_looking_forward ? player_walk_forward_sprite : player_walk_backwards_sprite), position, cell_size);
+        is_moving = false;
+    }
+    else {
+        draw_image((is_looking_forward ? player_stand_forward_image : player_stand_backwards_image), position, cell_size);
+    }
 }
 
 void draw_pause_menu() {

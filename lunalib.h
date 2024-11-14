@@ -209,27 +209,27 @@ size_t LevelManager::index = 0;
 std::vector<Level> LevelManager::levels;
 std::vector<levelStatistics> LevelManager::stats(3);
 
+bool is_colliding(Vector2 pos, char look_for);
+
 class Player {
 public:
     void spawn(size_t row, size_t column);
-    void move_horizontally();
+    void move_horizontally(float delta);
     void update();
-    void draw();
-
-    size_t get_row() {return row;}
-    size_t get_column() {return column;}
-    Texture2D getImage() {return image;}
-    int getSteps() {return movements.size();}
-
-    ~Player() {
-        UnloadTexture(image);
+    bool is_player_on_ground() {
+        is_in_air = is_colliding({pos.x, pos.y + 0.1f}, Level::WALL);
+        return is_in_air;
     }
-
+    void set_y_velocity(float v) { y_velocity = v; }
+    void draw();
+    void reset() {lives = 3;}
+    void kill() {lives-=1;}
+    size_t get_lives() {return lives;}
 private:
-    size_t row, column;
-    Texture2D image;
-    std::vector<vector2> movements;
-    std::vector<bool> was_box_moved;
+    Vector2 pos;
+    float y_velocity;
+    bool is_in_air, is_looking_forward, is_moving;
+    size_t lives = 3;
 };
 
 struct Option {

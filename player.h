@@ -3,39 +3,45 @@
 
 #include "globals.h"
 
-void spawn_player(size_t row, size_t column) {
-    player_pos.x = column;
-    player_pos.y = row;
+void Player::spawn(size_t row, size_t column) {
+    pos.x = column;
+    pos.y = row;
 }
 
-void move_player_horizontally(float delta) {
-    float next_x = player_pos.x + delta;
-    if (!is_colliding({next_x, player_pos.y}, Level::WALL))
-        player_pos.x = next_x;
+void Player::move_horizontally(float delta) {
+    float next_x = pos.x + delta;
+    if (!is_colliding({next_x, pos.y}, Level::WALL)) {
+        pos.x = next_x;
+        is_looking_forward = delta > 0;
+        is_moving = true;
+    }
     else
-        player_pos.x = roundf(player_pos.x);
+        pos.x = roundf(pos.x);
 }
 
-void update_player() {
+void Player::update() {
     // In THIS very order: first add velocity to position, then gravity to velocity
     // Why? I don't know! But it is glitchy otherwise.
-    player_pos.y += player_y_velocity;
-    player_y_velocity += GRAVITY_FORCE;
+    if (is_colliding({pos.x, pos.y - 0.1f}, Level::WALL) && y_velocity < 0) {
+        y_velocity = 0.05;
+    }
+    pos.y += y_velocity;
+    y_velocity += GRAVITY_FORCE;
 
     // Calculating collisions to see if the player hit the ceiling
-    is_player_on_ground = is_colliding({player_pos.x, player_pos.y + 0.1f}, Level::WALL);
-    if (is_player_on_ground) {
-        player_y_velocity = 0;
-        player_pos.y = roundf(player_pos.y);
+    is_in_air = !is_colliding({pos.x, pos.y + 0.1f}, Level::WALL);
+    if (!is_in_air) {
+        y_velocity = 0;
+        pos.y = roundf(pos.y);
     }
 
     // Interacting with other level elements
-    if (is_colliding(player_pos, Level::COIN)) {
-        get_collider(player_pos, Level::COIN) = ' '; // Remove the coin
+    if (is_colliding(pos, Level::COIN)) {
+        get_collider(pos, Level::COIN) = ' '; // Remove the coin
         player_score+=10;
         PlaySound(coin_sound);
     }
-    if (is_colliding(player_pos, Level::EXIT)) {
+    if (is_colliding(pos, Level::EXIT)) {
         LevelManager::load(1);
         PlaySound(exit_sound);
     }

@@ -69,10 +69,7 @@ const float GRAVITY_FORCE = 0.01f;
 const float JUMP_STRENGTH = 0.3f;
 const float MOVEMENT_SPEED = 0.1f;
 
-Vector2 player_pos;
-float player_y_velocity = 0;
-
-bool is_player_on_ground;
+Player player;
 
 int player_score = 0;
 
@@ -127,6 +124,13 @@ Texture2D wall_image;
 Texture2D air_image;
 Texture2D exit_image;
 
+Texture2D heart_image;
+
+Texture2D player_stand_forward_image;
+Texture2D player_stand_backwards_image;
+Texture2D player_jump_forward_image;
+Texture2D player_jump_backwards_image;
+
 struct sprite {
     size_t frame_count    = 0;
     size_t frames_to_skip = 3;
@@ -138,7 +142,8 @@ struct sprite {
 };
 
 sprite coin_sprite;
-sprite player_sprite;
+sprite player_walk_forward_sprite;
+sprite player_walk_backwards_sprite;
 
 /* Sounds */
 
@@ -178,7 +183,6 @@ game_state game_state = MENU_STATE;
 void derive_graphics_metrics_from_loaded_level();
 void draw_menu();
 void draw_game_overlay();
-void draw_player();
 void draw_pause_menu();
 void create_victory_menu_background();
 void animate_victory_menu_background();
@@ -189,12 +193,6 @@ void draw_victory_menu();
 
 bool is_colliding(Vector2 pos, char look_for = '#');
 char& get_collider(Vector2 pos, char look_for);
-
-// PLAYER_H
-
-void spawn_player(size_t row, size_t column);
-void move_player_horizontally(float delta);
-void update_player();
 
 // ASSETS_H
 
