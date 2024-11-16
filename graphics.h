@@ -66,19 +66,14 @@ void draw_menu() {
 
 void draw_game_overlay() {
     Text score(
-        "Score " + std::to_string(player_score),
-        WHITE,
+        std::to_string(player.get_coins()),
+        YELLOW,
         40*screen_scale,
-        {0.50f, 0.05f}
-    );
-    Text score_shadow(
-        "Score " + std::to_string(player_score),
-        GRAY,
-        40*screen_scale,
-        {0.503f, 0.055f}
+        {0.06f, 0.045f}
     );
 
-    score_shadow.draw();
+    float coinSize = 60*screen_scale;
+    draw_sprite(coin_sprite, {0, 0}, coinSize);
     score.draw();
 
     float heartSize = 60 * screen_scale;
@@ -106,6 +101,7 @@ void LevelManager::draw() {
                 case Level::PLAYER:
                 case Level::COIN:
                 case Level::EXIT:
+                case Level::SPIKE:
                     draw_image(air_image, pos, cell_size);
                     break;
                 case Level::WALL:
@@ -120,6 +116,8 @@ void LevelManager::draw() {
                 case Level::EXIT:
                     draw_image(exit_image, pos, cell_size);
                     break;
+                case Level::SPIKE:
+                    draw_image(spike_image, pos, cell_size);
                 default:
                     break;
             }

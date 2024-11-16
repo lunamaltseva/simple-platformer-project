@@ -38,12 +38,19 @@ void Player::update() {
     // Interacting with other level elements
     if (is_colliding(pos, Level::COIN)) {
         get_collider(pos, Level::COIN) = ' '; // Remove the coin
-        player_score+=10;
+        coins++;
         PlaySound(coin_sound);
     }
     if (is_colliding(pos, Level::EXIT)) {
         LevelManager::load(1);
         PlaySound(exit_sound);
+    }
+    if (is_colliding(pos, Level::SPIKE)) {
+        LevelManager::load();
+        player.kill();
+        if (player.get_lives() <= 0) {
+            game_state = GAME_OVER_STATE;
+        }
     }
 }
 

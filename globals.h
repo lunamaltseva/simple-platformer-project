@@ -14,7 +14,7 @@ char LEVEL_1_DATA[] = {
         '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#',
         '#', ' ', ' ', ' ', ' ', '*', ' ', ' ', ' ', ' ', '#',
         '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#',
-        '#', ' ', '@', ' ', ' ', ' ', ' ', ' ', 'E', ' ', '#',
+        '#', ' ', '@', ' ', ' ', ' ', ' ', ' ', 'E', ' ', '#',w
         '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'
 };
 
@@ -33,7 +33,7 @@ char LEVEL_2_DATA[] = {
         '#', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', '#',
         '#', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', '#',
         '#', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', '#',
-        '#', ' ', '@', ' ', '#', '#', ' ', ' ', ' ', ' ', ' ', '#', '#', ' ', 'E', ' ', '#',
+        '#', ' ', '@', ' ', '#', '#', '^', '^', '^', '^', '^', '#', '#', ' ', 'E', ' ', '#',
         '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'
 };
 
@@ -70,8 +70,6 @@ const float JUMP_STRENGTH = 0.3f;
 const float MOVEMENT_SPEED = 0.1f;
 
 Player player;
-
-int player_score = 0;
 
 /* Graphic Metrics */
 
@@ -123,6 +121,7 @@ Text victory_subtitle = {
 Texture2D wall_image;
 Texture2D air_image;
 Texture2D exit_image;
+Texture2D spike_image;
 
 Texture2D heart_image;
 
@@ -172,6 +171,7 @@ enum game_state {
     MENU_STATE,
     GAME_STATE,
     PAUSED_STATE,
+    GAME_OVER_STATE,
     VICTORY_STATE
 };
 game_state game_state = MENU_STATE;

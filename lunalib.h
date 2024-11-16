@@ -152,7 +152,8 @@ public:
                       AIR    = ' ',
                       PLAYER = '@',
                       COIN   = '*',
-                      EXIT   = 'E';
+                      EXIT   = 'E',
+                      SPIKE  = '^';
 
     Level() {}
     Level(size_t height, size_t width, char *data)
@@ -225,11 +226,12 @@ public:
     void reset() {lives = 3;}
     void kill() {lives-=1;}
     size_t get_lives() {return lives;}
+    size_t get_coins() {return coins;}
 private:
     Vector2 pos;
     float y_velocity;
     bool is_in_air, is_looking_forward, is_moving;
-    size_t lives = 3;
+    size_t lives = 3, coins = 0;
 };
 
 struct Option {
