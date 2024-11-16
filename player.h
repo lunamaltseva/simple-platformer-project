@@ -20,37 +20,40 @@ void Player::move_horizontally(float delta) {
 }
 
 void Player::update() {
-    // In THIS very order: first add velocity to position, then gravity to velocity
-    // Why? I don't know! But it is glitchy otherwise.
     if (is_colliding({pos.x, pos.y - 0.1f}, Level::WALL) && y_velocity < 0) {
         y_velocity = 0.05;
     }
     pos.y += y_velocity;
     y_velocity += GRAVITY_FORCE;
 
-    // Calculating collisions to see if the player hit the ceiling
     is_in_air = !is_colliding({pos.x, pos.y + 0.1f}, Level::WALL);
     if (!is_in_air) {
         y_velocity = 0;
         pos.y = roundf(pos.y);
     }
 
-    // Interacting with other level elements
     if (is_colliding(pos, Level::COIN)) {
-        get_collider(pos, Level::COIN) = ' '; // Remove the coin
-        coins++;
+        get_collider(pos, Level::COIN) = ' ';
+        coins[LevelManager::get_index()]++;
         PlaySound(coin_sound);
     }
-    if (is_colliding(pos, Level::EXIT)) {
-        LevelManager::load(1);
-        PlaySound(exit_sound);
+    else if (is_colliding(pos, Level::KEY)) {
+        get_collider(pos, Level::KEY) = ' ';
+        keys[LevelManager::get_index()]++;
+        PlaySound(coin_sound);
     }
-    if (is_colliding(pos, Level::SPIKE)) {
-        LevelManager::load();
-        player.kill();
-        if (player.get_lives() <= 0) {
-            game_state = GAME_OVER_STATE;
+    else if (is_colliding(pos, Level::EXIT)) {
+        if (LevelManager::getInstance()->keys_total() <= keys[LevelManager::get_index()]) {
+            LevelManager::load(1);
+            PlaySound(exit_sound);
         }
+    }
+    else if (is_colliding(pos, Level::SPIKE)) {
+        player.kill();
+    }
+
+    if (ElectroManager::is_colliding_enemy(pos)) {
+        player.kill();
     }
 }
 

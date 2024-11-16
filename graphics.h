@@ -2,6 +2,7 @@
 #define GRAPHICS_H
 
 #include "globals.h"
+#include <iomanip>
 
 void Text::draw() {
     dimensions = MeasureTextEx(*font, text.c_str(), size*((float)GetScreenHeight()/1080), spacing);
@@ -76,11 +77,44 @@ void draw_game_overlay() {
     draw_sprite(coin_sprite, {0, 0}, coinSize);
     score.draw();
 
-    float heartSize = 60 * screen_scale;
-    Vector2 heartsPosition = {(screen_size.x - heartSize*3) / 2, screen_size.y - heartSize};
+    float heart_size = 60 * screen_scale;
+    Vector2 hearts_position{(screen_size.x - heart_size * 3) / 2, screen_size.y - heart_size};
     for (int i = 0; i < player.get_lives(); i++) {
-        draw_image(heart_image, heartsPosition, heartSize);
-        heartsPosition.x += heartSize;
+        draw_image(heart_image, hearts_position, heart_size);
+        hearts_position.x += heart_size;
+    }
+
+    float key_size = 60 * screen_scale;
+    Vector2 key_position{screen_size.x - key_size, screen_size.y - key_size};
+    for (int i = 0; i < LevelManager::getInstance()->keys_total(); i++) {
+        draw_image((player.get_keys() > i ? key_image : key_outline_image), key_position, key_size);
+        key_position.y -= key_size;
+    }
+
+    unsigned char colorDelta = abs(sin((game_frame/120.f) * 3.14159265358979323846))*250;
+    Color color({255, colorDelta, colorDelta, 255});
+    Text time (
+            std::to_string(LevelManager::getInstance()->time()/60) + "s",
+            (LevelManager::getInstance()->time() < 600 ? color : WHITE),
+            40*screen_scale,
+            {0.94f, 0.045f}
+    );
+    time.draw();
+
+    if (player.get_coins() > 0) {
+        float ability_icon_size = 60 * screen_scale;
+        Vector2 ability_icon_position{0, screen_size.y - key_size};
+        draw_image(ability_image, ability_icon_position, ability_icon_size);
+        ability_icon_position.y -= ability_icon_size;
+        draw_sprite(coin_sprite, ability_icon_position, ability_icon_size);
+
+        Text double_jump(
+                "Double Jump",
+                WHITE,
+                20*screen_scale,
+                {0.15f, 0.953f}
+        );
+        double_jump.draw();
     }
 }
 
@@ -102,6 +136,7 @@ void LevelManager::draw() {
                 case Level::COIN:
                 case Level::EXIT:
                 case Level::SPIKE:
+                case Level::KEY:
                     draw_image(air_image, pos, cell_size);
                     break;
                 case Level::WALL:
@@ -114,10 +149,13 @@ void LevelManager::draw() {
                     draw_sprite(coin_sprite, pos, cell_size);
                     break;
                 case Level::EXIT:
-                    draw_image(exit_image, pos, cell_size);
+                    draw_image((level->keys == 0 ? exit_no_keys : (LevelManager::getInstance()->keys_total() <= player.get_keys() ? exit_keys_open : exit_keys_closed)), pos, cell_size);
                     break;
                 case Level::SPIKE:
                     draw_image(spike_image, pos, cell_size);
+                    break;
+                case Level::KEY:
+                    draw_sprite(key_sprite, pos, cell_size);
                 default:
                     break;
             }
@@ -133,15 +171,28 @@ void Player::draw() {
             shift_to_center.y + pos.y * cell_size
     };
 
-    if (is_in_air) {
-        draw_image((is_looking_forward ? player_jump_forward_image : player_jump_backwards_image), position, cell_size);
+    if (game_state != YOU_DIED_STATE) {
+        if (is_in_air) {
+            draw_image((is_looking_forward ? player_jump_forward_image : player_jump_backwards_image), position, cell_size);
+        }
+        else if (is_moving) {
+            draw_sprite((is_looking_forward ? player_walk_forward_sprite : player_walk_backwards_sprite), position, cell_size);
+            is_moving = false;
+        }
+        else {
+            draw_image((is_looking_forward ? player_stand_forward_image : player_stand_backwards_image), position, cell_size);
+        }
     }
-    else if (is_moving) {
-        draw_sprite((is_looking_forward ? player_walk_forward_sprite : player_walk_backwards_sprite), position, cell_size);
-        is_moving = false;
-    }
-    else {
-        draw_image((is_looking_forward ? player_stand_forward_image : player_stand_backwards_image), position, cell_size);
+    else draw_image(player_dead_image, position, cell_size);
+}
+
+void ElectroManager::draw() {
+    for (auto &electro : arr) {
+        Vector2 position = {
+                shift_to_center.x + electro.x * cell_size,
+                shift_to_center.y + electro.y * cell_size
+        };
+        draw_sprite(electro_sprite, position, cell_size);
     }
 }
 
@@ -149,60 +200,7 @@ void draw_pause_menu() {
     game_paused.draw();
 }
 
-void create_victory_menu_background() {
-    for (auto &ball : victory_balls) {
-        ball.x  = rand_up_to(screen_size.x);
-        ball.y  = rand_up_to(screen_size.y);
-        ball.dx = rand_from_to(-VICTORY_BALL_MAX_SPEED, VICTORY_BALL_MAX_SPEED);
-        ball.dx *= screen_scale;
-        if (abs(ball.dx) < 0E-1) ball.dx = 1.0f;
-        ball.dy = rand_from_to(-VICTORY_BALL_MAX_SPEED, VICTORY_BALL_MAX_SPEED);
-        ball.dy *= screen_scale;
-        if (abs(ball.dy) < 0E-1) ball.dy = 1.0f;
-        ball.radius = rand_from_to(VICTORY_BALL_MIN_RADIUS, VICTORY_BALL_MAX_RADIUS);
-        ball.radius *= screen_scale;
-    }
-
-    /* Clear both the front buffer and the back buffer to avoid ghosting of the game graphics. */
-    ClearBackground(BLACK);
-    EndDrawing();
-    BeginDrawing();
-    ClearBackground(BLACK);
-    EndDrawing();
-    BeginDrawing();
-}
-
-void animate_victory_menu_background() {
-    for (auto &ball : victory_balls) {
-        ball.x += ball.dx;
-        if (ball.x - ball.radius < 0 ||
-            ball.x + ball.radius >= screen_size.x) {
-            ball.dx = -ball.dx;
-        }
-        ball.y += ball.dy;
-        if (ball.y - ball.radius < 0 ||
-            ball.y + ball.radius >= screen_size.y) {
-            ball.dy = -ball.dy;
-        }
-    }
-}
-
-void draw_victory_menu_background() {
-    for (auto &ball : victory_balls) {
-        DrawCircleV({ ball.x, ball.y }, ball.radius, VICTORY_BALL_COLOR);
-    }
-}
-
 void draw_victory_menu() {
-    DrawRectangle(
-        0, 0,
-        static_cast<int>(screen_size.x), static_cast<int>(screen_size.y),
-        { 0, 0, 0, VICTORY_BALL_TRAIL_TRANSPARENCY }
-    );
-
-    animate_victory_menu_background();
-    draw_victory_menu_background();
-
     victory_title.draw();
     victory_subtitle.draw();
 }

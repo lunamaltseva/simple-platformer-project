@@ -9,7 +9,8 @@
 #include <functional>
 #include <sstream>
 #include <fstream>
-#include <iostream>
+#include <algorithm>
+#include <chrono>
 
 size_t game_frame = 0;
 size_t runtime = 0;
@@ -151,26 +152,29 @@ public:
     static const char WALL   = '#',
                       AIR    = ' ',
                       PLAYER = '@',
-                      COIN   = '*',
+                      COIN   = '$',
+                      KEY    = '*',
                       EXIT   = 'E',
-                      SPIKE  = '^';
+                      SPIKE  = '^',
+                      ELECTRO= '<';
 
     Level() {}
-    Level(size_t height, size_t width, char *data)
-            : rows(height), columns(width), data(data) { }
+    Level(size_t height, size_t width, char *data, long long allocated_time, size_t keys = 0)
+            : rows(height), columns(width), data(data), allocated_time(allocated_time*60+59), keys(keys) { }
 
-    bool is_cell_inside(int row, int column);
     char& get_cell(size_t row, size_t column);
     void set_cell(size_t row, size_t column, char cell);
-    void if_solved();
-    int count(char object);
+    long long countdown() {allocated_time--; return time();}
+    long long time() { return allocated_time; }
 
-    size_t height() { return rows; }
-    size_t width() { return columns; }
+    [[nodiscard]] size_t height()     const { return rows;    }
+    [[nodiscard]] size_t width()      const { return columns; }
+    [[nodiscard]] size_t keys_total() const { return keys;    }
     friend class LevelManager;
-private:
-    size_t rows, columns;
+protected:
+    size_t rows, columns, keys;
     char *data;
+    long long allocated_time;
 };
 
 struct levelStatistics {
@@ -212,8 +216,19 @@ std::vector<levelStatistics> LevelManager::stats(3);
 
 bool is_colliding(Vector2 pos, char look_for);
 
+enum game_state {
+    MENU_STATE,
+    GAME_STATE,
+    PAUSED_STATE,
+    YOU_DIED_STATE,
+    GAME_OVER_STATE,
+    VICTORY_STATE
+};
+game_state game_state = MENU_STATE;
+
 class Player {
 public:
+    Player() { for(int i = 0; i < 10; i++) {coins.push_back(0); keys.push_back(0);}}
     void spawn(size_t row, size_t column);
     void move_horizontally(float delta);
     void update();
@@ -223,16 +238,68 @@ public:
     }
     void set_y_velocity(float v) { y_velocity = v; }
     void draw();
-    void reset() {lives = 3;}
-    void kill() {lives-=1;}
+    void reset() {lives = 3; keys.clear(); coins.clear(); for(int i = 0; i < 10; i++) {coins.push_back(0); keys.push_back(0);}}
+    void kill() {
+        lives-=1;
+        keys[LevelManager::get_index()] = 0;
+        coins[LevelManager::get_index()] = 0;
+        game_state = (lives <= 0 ? GAME_OVER_STATE : YOU_DIED_STATE);
+    };
     size_t get_lives() {return lives;}
-    size_t get_coins() {return coins;}
+    size_t get_coins() {size_t sum = 0; for (auto v : coins) sum+=v; return sum;}
+    size_t get_keys()  {return keys[LevelManager::get_index()];}
+    void lose_coins(size_t offset) {if (get_coins()>0) coins[LevelManager::get_index()] -= offset;}
 private:
     Vector2 pos;
     float y_velocity;
     bool is_in_air, is_looking_forward, is_moving;
-    size_t lives = 3, coins = 0;
+    size_t lives = 3;
+    std::vector<size_t> coins;
+    std::vector<size_t> keys;
 };
+
+struct Electro{
+    float x, y;
+    bool is_right = false;
+};
+
+bool is_colliding(Vector2 pos, char look_for);
+
+class ElectroManager{
+public:
+    static void spawn(float x, float y) {
+        arr.push_back({x, y});
+    }
+    static void reset() {
+        arr.clear();
+    }
+    static void update() {
+        for (auto &electro : arr) {
+            if (electro.is_right) {
+                electro.x += electro_speed;
+                float next_x = electro.x + electro_speed;
+                if (is_colliding({next_x, electro.y}, Level::WALL)) {
+                    electro.is_right = false;
+                }
+            }
+            else {
+                electro.x -= electro_speed;
+                float next_x = electro.x - electro_speed;
+                if (is_colliding({next_x, electro.y}, Level::WALL)) {
+                    electro.is_right = true;
+                }
+            }
+        }
+    }
+    static bool is_colliding_enemy(Vector2 pos);
+    static void draw();
+private:
+    static std::vector<Electro> arr;
+    const static float electro_speed;
+};
+
+const float ElectroManager::electro_speed = 0.05f;
+std::vector<Electro> ElectroManager::arr;
 
 struct Option {
     std::string text;

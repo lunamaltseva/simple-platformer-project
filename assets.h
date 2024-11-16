@@ -18,22 +18,30 @@ void unload_fonts() {
 void load_images() {
     wall_image                      = LoadTexture("data/images/wall.png");
     air_image                       = LoadTexture("data/images/air.png");
-    exit_image                      = LoadTexture("data/images/exit.png");
+    exit_no_keys                    = LoadTexture("data/images/exit_no_keys.png");
+    exit_keys_closed                = LoadTexture("data/images/exit_closed.png");
+    exit_keys_open                  = LoadTexture("data/images/exit_open.png");
     heart_image                     = LoadTexture("data/images/heart.png");
     spike_image                     = LoadTexture("data/images/spikes.png");
     coin_sprite                     = load_sprite("data/images/coin/coin", ".png", 3, true, 18);
+    key_sprite                      = load_sprite("data/images/key/key", ".png", 4, true, 18);
+    key_image                       = LoadTexture("data/images/key.png");
+    key_outline_image               = LoadTexture("data/images/key_outline.png");
+    ability_image                   = LoadTexture("data/images/double_jump.png");
     player_stand_forward_image      = LoadTexture("data/images/player_stand_forward.png");
     player_stand_backwards_image    = LoadTexture("data/images/player_stand_backwards.png");
     player_jump_forward_image       = LoadTexture("data/images/player_jump_forward.png");
     player_jump_backwards_image     = LoadTexture("data/images/player_jump_backwards.png");
+    player_dead_image               = LoadTexture("data/images/player_dead.png");
     player_walk_forward_sprite      = load_sprite("data/images/player_walk_forward/player", ".png", 3, true, 15);
     player_walk_backwards_sprite    = load_sprite("data/images/player_walk_backwards/player", ".png", 3, true, 15);
+    electro_sprite                  = load_sprite("data/images/electro/electro", ".png", 3, true, 9);
 }
 
 void unload_images() {
     UnloadTexture(wall_image);
     UnloadTexture(air_image);
-    UnloadTexture(exit_image);
+    UnloadTexture(exit_no_keys);
     unload_sprite(coin_sprite);
 }
 
