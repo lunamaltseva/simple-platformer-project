@@ -8,7 +8,7 @@
 #include <cassert>
 
 void load_fonts() {
-    menu_font = LoadFontEx("data/fonts/ARCADE_N.ttf", 256, nullptr, 128);
+    menu_font = LoadFontEx("data/fonts/alagard.ttf", 256, nullptr, 128);
 }
 
 void unload_fonts() {
@@ -36,6 +36,23 @@ void load_images() {
     player_walk_forward_sprite      = load_sprite("data/images/player_walk_forward/player", ".png", 3, true, 15);
     player_walk_backwards_sprite    = load_sprite("data/images/player_walk_backwards/player", ".png", 3, true, 15);
     electro_sprite                  = load_sprite("data/images/electro/electro", ".png", 3, true, 9);
+
+    intro1              = LoadTexture("data/images/slides/intro1.png");
+    intro2              = LoadTexture("data/images/slides/intro2.png");
+    intro3              = LoadTexture("data/images/slides/intro3.png");
+    intro4              = LoadTexture("data/images/slides/intro4.png");
+    ending1             = LoadTexture("data/images/slides/final1.png");
+    ending2             = LoadTexture("data/images/slides/final2.png");
+    ending3             = LoadTexture("data/images/slides/final3.png");
+
+    intro.add({"I used to live to my fullest.",       intro1});
+    intro.add({"Nowadays?... Not so much.",           intro2});
+    intro.add({"But my days are numbered...",         intro3});
+    intro.add({"And I can't go out without a blaze.", intro4});
+
+    ending.add({"Almost there...", ending1});
+    ending.add({"I...",            ending2});
+    ending.add({"...",             ending3});
 }
 
 void unload_images() {
@@ -43,6 +60,10 @@ void unload_images() {
     UnloadTexture(air_image);
     UnloadTexture(exit_no_keys);
     unload_sprite(coin_sprite);
+}
+
+void drawImage(Texture2D image, float x, float y, float width, float height) {
+    draw_image(image, {x, y}, width, height);
 }
 
 void draw_image(Texture2D image, Vector2 pos, float size) {
@@ -119,13 +140,32 @@ void draw_sprite(sprite &sprite, Vector2 pos, float width, float height) {
 }
 
 void load_sounds() {
-    coin_sound = LoadSound("data/sounds/coin.wav");
-    exit_sound = LoadSound("data/sounds/exit.wav");
+    InitAudioDevice();
+    scroll         = LoadSound("data/sounds/scroll.ogg");
+    forward        = LoadSound("data/sounds/click.ogg");
+    backout        = LoadSound("data/sounds/backout.ogg");
+
+    coin_sound     = LoadSound("data/sounds/coin.wav");
+    exit_sound     = LoadSound("data/sounds/exit.wav");
+
+    theme          = LoadMusicStream("data/music/theme.ogg");
+    main_theme     = LoadMusicStream("data/music/main.ogg");
+    game           = LoadMusicStream("data/music/game.ogg");
+    idle           = LoadMusicStream("data/music/idle.ogg");
 }
 
 void unload_sounds() {
     UnloadSound(coin_sound);
     UnloadSound(exit_sound);
+}
+
+void play(Sound sound) {
+    PlaySound(sound);
+}
+
+void play(Music music) {
+    PlayMusicStream(music);
+    UpdateMusicStream(music);
 }
 
 #endif // IMAGES_H

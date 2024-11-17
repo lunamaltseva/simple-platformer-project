@@ -102,7 +102,7 @@ private:
     Texture2D picture;
 };
 
-extern int animationFrame;
+int animationFrame;
 
 class Slideshow {
 public:
@@ -195,7 +195,7 @@ public:
 
     static void load(size_t offset = 0);
     static void unload();
-    static void reset() { index = 0; unload(); stats[0].steps = stats[1].steps = stats[2].steps = 0; }
+    static void reset() { index = 0; unload(); }
     static void forceComplete();
     static size_t get_index() { return index; }
     static size_t get_size()  { return levels.size(); }
@@ -217,14 +217,16 @@ std::vector<levelStatistics> LevelManager::stats(3);
 bool is_colliding(Vector2 pos, char look_for);
 
 enum game_state {
+    INTRO_STATE,
     MENU_STATE,
     GAME_STATE,
     PAUSED_STATE,
     YOU_DIED_STATE,
     GAME_OVER_STATE,
-    VICTORY_STATE
+    OPTIONS_STATE,
+    ENDING_STATE
 };
-game_state game_state = MENU_STATE;
+game_state game_state = INTRO_STATE;
 
 class Player {
 public:
@@ -327,6 +329,20 @@ protected:
     Font* font;
 };
 
+void Menu::draw() {
+    for (int i = 0; i < entry.size(); i++) {
+        Text(entry[i].text, (i == selection ? colorActive : colorInactive), size, {offsetPercentInitial.x + offsetPercentAdditional.x*i, offsetPercentInitial.y + offsetPercentAdditional.y*i}, spacing, font).draw();
+    }
+}
+
+void Menu::run() {
+    if (mv_down())         {if (entry.size() <= ++selection) selection = 0; PlaySound(scroll);}
+    else if (mv_up())      {if (0 > --selection) selection = entry.size()-1;PlaySound(scroll);}
+    else if (mv_forward()) {entry[selection].forward();PlaySound(forward);}
+    else if (mv_back())    {backward();PlaySound(backout);}
+    this->draw();
+}
+
 struct Parameters {
     int value;
     enum values {key, speed};
@@ -351,9 +367,50 @@ public:
         return parameters[index].value;
     }
 protected:
-    std::vector<Parameters> parameters = {{KEY_W, Parameters::key},{KEY_A, Parameters::key},{KEY_S, Parameters::key}, {KEY_D, Parameters::key}, {KEY_U, Parameters::key}, {4, Parameters::speed}};
+    std::vector<Parameters> parameters = {{KEY_W, Parameters::key},{KEY_A, Parameters::key}, {KEY_D, Parameters::key}};
     bool selected;
     float offset = 0.53f;
 };
+
+int OptionsMenu::getKey() {
+    int stroke = GetKeyPressed();
+    if (stroke != 0) {
+        parameters[selection].value = stroke;
+    }
+    return parameters[selection].value;
+}
+
+void OptionsMenu::increaseDecrease() {
+    int &val = parameters[selection].value;
+
+    if (val>=1 && val<=60) {
+        if (mv_down() && val!=60) val++;
+        else if (mv_up() && val!=1) val--;
+    }
+}
+
+void OptionsMenu::run() {
+    if (!selected) {
+        if (mv_back()) { backward(); PlaySound(backout); }
+        else if (mv_forward()) {selected = true; PlaySound(forward);}
+        else if (mv_down()) { if (entry.size() <= ++selection) selection = 0; PlaySound(scroll);}
+        else if (mv_up()) { if (0 > --selection) selection = entry.size() - 1; PlaySound(scroll);}
+    }
+    else {
+        if (mv_back() || mv_forward()) {selected = false; PlaySound(backout);}
+        else {
+            entry[selection].forward();
+        }
+    }
+
+    this->draw();
+}
+
+void OptionsMenu::draw() {
+    Menu::draw();
+    for (int i = 0; i < entry.size(); i++) {
+        Text(parameters[i].valueType == Parameters::speed ? std::to_string(parameters[i].value) : std::string(1, static_cast<char>(parameters[i].value)), (i == selection && selected ? colorActive : colorInactive), size, {offset + offsetPercentAdditional.x*i, offsetPercentInitial.y + offsetPercentAdditional.y*i}, spacing, font).draw();;
+    }
+}
 
 #endif //LUNALIB_H

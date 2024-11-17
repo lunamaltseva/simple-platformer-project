@@ -11,15 +11,16 @@ void update_game() {
     game_frame++;
 
     switch (game_state) {
-        case MENU_STATE:
-            if (IsKeyPressed(KEY_ENTER)) {
-                SetExitKey(0);
-                game_state = GAME_STATE;
-                LevelManager::load();
-            }
+            case INTRO_STATE:
+                if (!intro.draw() || IsKeyPressed(KEY_ENTER)) {
+                    game_state = MENU_STATE;
+                    game_frame = 0;
+                }
+            play(theme);
             break;
 
-        case GAME_STATE:
+            case GAME_STATE:
+            play(game);
             ElectroManager::update();
 
             if (LevelManager::getInstance()->countdown() < 60) {
@@ -48,16 +49,21 @@ void update_game() {
 
             if (IsKeyPressed(KEY_ESCAPE)) {
                 game_state = PAUSED_STATE;
+                game_frame = 0;
+                PlaySound(backout);
             }
             break;
 
         case PAUSED_STATE:
+            play(game);
             if (IsKeyPressed(KEY_ESCAPE)) {
                 game_state = GAME_STATE;
+                PlaySound(forward);
             }
             break;
 
         case YOU_DIED_STATE:
+            play(idle);
             if (IsKeyPressed(KEY_ENTER)) {
                 LevelManager::load();
                 game_state = GAME_STATE;
@@ -65,6 +71,7 @@ void update_game() {
             break;
 
         case GAME_OVER_STATE:
+            play(idle);
             if (IsKeyPressed(KEY_ENTER)) {
                 player.reset();
                 LevelManager::reset();
@@ -73,10 +80,11 @@ void update_game() {
             }
             break;
 
-        case VICTORY_STATE:
-            if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_ESCAPE)) {
-                SetExitKey(KEY_ESCAPE);
+        case ENDING_STATE:
+            play(idle);
+            if (!ending.draw()) {
                 game_state = MENU_STATE;
+                game_frame = 0;
             }
             break;
     }
@@ -85,6 +93,10 @@ void update_game() {
 void draw_game() {
     switch(game_state) {
         case MENU_STATE:
+            play(main_theme);
+            if (game_frame != 0) main_menu.run();
+            main_menu_byline.draw();
+            main_menu_title.draw();
             draw_menu();
             break;
 
@@ -92,6 +104,16 @@ void draw_game() {
             LevelManager::draw();
             ElectroManager::draw();
             draw_game_overlay();
+            break;
+
+        case OPTIONS_STATE:
+            play(main_theme);
+            main_menu.draw();
+            main_menu_byline.draw();
+            main_menu_title.draw();
+            draw_menu();
+            optionsMenu.run();
+            optionsMenuTitle.draw();
             break;
 
         case YOU_DIED_STATE:
@@ -107,17 +129,15 @@ void draw_game() {
             LevelManager::draw();
             ElectroManager::draw();
             draw_game_overlay();
-            DrawRectangle(0, 0, screen_size.x, screen_size.y, {0, 0, 0, 150});
-            draw_pause_menu();
+            DrawRectangle(0, 0, screen_size.x, screen_size.y, {0, 0, 0, 210});
+            if (game_frame != 0) pauseMenu.run();
+            pauseMenuTitle.draw();
             break;
 
         case GAME_OVER_STATE:
             game_over_title.draw();
             death_subtitle.draw();
-            break;
-
-        case VICTORY_STATE:
-            draw_victory_menu();
+            game_frame = 0;
             break;
     }
 }
@@ -138,6 +158,7 @@ int main() {
     load_images();
     load_sounds();
     LevelManager::load();
+    SetExitKey(0);
 
     while (!WindowShouldClose()) {
         ClearBackground(BLACK);

@@ -61,8 +61,10 @@ void derive_graphics_metrics_from_loaded_level() {
 }
 
 void draw_menu() {
-    game_title.draw();
-    game_subtitle.draw();
+    int minimum = std::min(screen_size.x, screen_size.y);
+    float scale = minimum*0.25f;
+    draw_image(exit_no_keys, {screen_size.x - (scale * 1.75f), screen_size.y - (scale * 1.5f)}, scale);
+    draw_sprite(player_walk_forward_sprite, {screen_size.x - (scale * 3.0f), screen_size.y - (scale * 1.5f)}, scale);
 }
 
 void draw_game_overlay() {
@@ -194,15 +196,6 @@ void ElectroManager::draw() {
         };
         draw_sprite(electro_sprite, position, cell_size);
     }
-}
-
-void draw_pause_menu() {
-    game_paused.draw();
-}
-
-void draw_victory_menu() {
-    victory_title.draw();
-    victory_subtitle.draw();
 }
 
 #endif //GRAPHICS_H

@@ -64,7 +64,7 @@ void LevelManager::load(size_t offset) {
     ElectroManager::reset();
 
     if (index >= get_size()) {
-        game_state = VICTORY_STATE;
+        game_state = ENDING_STATE;
         player.reset();
         index = 0;
         return;

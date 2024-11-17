@@ -49,7 +49,7 @@ Level LEVEL_2 = {
 char LEVEL_3_DATA[] = {
         '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
         '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#',
-        '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', '$', ' ', ' ', '<', '#', ' ', ' ', ' ', ' ', ' ', '#',
+        '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', '$', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#',
         '#', ' ', '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', '#',
         '#', ' ', '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', '#',
         '#', ' ', '#', ' ', ' ', ' ', '#', ' ', '$', ' ', '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', '#',
@@ -70,6 +70,8 @@ Level LEVEL_3 = {
 
 /* Player data */
 
+Prompt *displayPrompt;
+
 const float GRAVITY_FORCE = 0.01f;
 const float JUMP_STRENGTH = 0.3f;
 const float MOVEMENT_SPEED = 0.1f;
@@ -88,38 +90,6 @@ float cell_size;
 Vector2 shift_to_center;
 
 /* Fonts */
-
-Text game_title(
-    "Platformer",
-    RED,
-    100.0f,
-    {0.50f, 0.50f}
-);
-
-Text game_subtitle = {
-    "Press Enter to Start",
-    WHITE,
-    50.0f,
-    {0.50f, 0.65f}
-};
-
-Text game_paused = {
-    "Press Escape to Resume"
-};
-
-Text victory_title = {
-    "You Won!",
-    RED,
-    100.0f,
-    {0.50f, 0.50f},
-};
-
-Text victory_subtitle = {
-    "Press Enter to go back to menu",
-    WHITE,
-    50.0f,
-    {0.50f, 0.65f}
-};
 
 Text death_title = {
     "You Died!",
@@ -162,6 +132,17 @@ Texture2D player_jump_forward_image;
 Texture2D player_jump_backwards_image;
 Texture2D player_dead_image;
 
+Texture2D intro1;
+Texture2D intro2;
+Texture2D intro3;
+Texture2D intro4;
+Texture2D ending1;
+Texture2D ending2;
+Texture2D ending3;
+
+Slideshow intro(220);
+Slideshow ending(220);
+
 struct sprite {
     size_t frame_count    = 0;
     size_t frames_to_skip = 3;
@@ -182,11 +163,42 @@ sprite player_walk_backwards_sprite;
 
 Sound coin_sound;
 Sound exit_sound;
+Sound scroll;
+Sound forward;
+Sound backout;
+
+Music theme;
+Music main_theme;
+Music game;
+Music idle;
 
 /* Victory Menu Background */
 
 /* Game States */
 
+Menu main_menu({
+        {"Play",         [] { game_state = GAME_STATE; SetExitKey(0); LevelManager::load();}},
+        {"Options",         [] { game_state = OPTIONS_STATE;}},
+        {"Exit",         [] { CloseWindow(); }}
+}, [] {CloseWindow();}, WHITE, GRAY, 50.0f, {0.2f, 0.45f}, {0.0f, 0.075f});
+Text main_menu_title("Quixote", GRAY, 80.0f, {0.2f, 0.2f}, 4.0f);
+Text main_menu_byline("By @lunamaltseva", GRAY, 30.0f, {0.2f, 0.85f}, 2.0f);
+
+
+extern OptionsMenu optionsMenu;
+Text optionsMenuTitle("Settings", WHITE, 75.0f, {0.43f, 0.205f}, 4.0f);
+OptionsMenu optionsMenu({
+        {"Jump", []          {optionsMenu.getKey();}},
+        {"Move Left", []        {optionsMenu.getKey();}},
+        {"Move Right", []        {optionsMenu.getKey();}},
+}, [] { game_state = MENU_STATE;}, WHITE, GRAY, 40.0f, {0.4f, 0.4f}, {0.0f, 0.05f});
+
+MultilineText pauseMenuTitle("Bear It Out\neven to the\nEdge of Doom", {0.0f, 0.075f}, RED, 70.0f, {0.5f, 0.2f});
+Menu pauseMenu({
+                       {"Continue",  [] {game_state = GAME_STATE;}},
+                       {"Restart",   [] {LevelManager::load(); game_state = GAME_STATE; player.kill();}},
+                       {"Main menu", [] {game_state = MENU_STATE; LevelManager::reset();}}
+               }, [] { game_state = GAME_STATE;}, WHITE, GRAY, 50.0f, {0.5f, 0.6f}, {0.0f, 0.075f});
 /* Forward Declarations */
 
 // GRAPHICS_H
