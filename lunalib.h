@@ -228,6 +228,8 @@ enum game_state {
 };
 game_state game_state = INTRO_STATE;
 
+extern Sound death_sound;
+
 class Player {
 public:
     Player() { for(int i = 0; i < 10; i++) {coins.push_back(0); keys.push_back(0);}}
@@ -246,6 +248,7 @@ public:
         keys[LevelManager::get_index()] = 0;
         coins[LevelManager::get_index()] = 0;
         game_state = (lives <= 0 ? GAME_OVER_STATE : YOU_DIED_STATE);
+        PlaySound(death_sound);
     };
     size_t get_lives() {return lives;}
     size_t get_coins() {size_t sum = 0; for (auto v : coins) sum+=v; return sum;}

@@ -166,6 +166,9 @@ Sound exit_sound;
 Sound scroll;
 Sound forward;
 Sound backout;
+Sound death_sound;
+Sound air_jump_sound;
+Sound key_sound;
 
 Music theme;
 Music main_theme;
@@ -188,17 +191,17 @@ Text main_menu_byline("By @lunamaltseva", GRAY, 30.0f, {0.2f, 0.85f}, 2.0f);
 extern OptionsMenu optionsMenu;
 Text optionsMenuTitle("Settings", WHITE, 75.0f, {0.43f, 0.205f}, 4.0f);
 OptionsMenu optionsMenu({
-        {"Jump", []          {optionsMenu.getKey();}},
-        {"Move Left", []        {optionsMenu.getKey();}},
+        {"Jump", []              {optionsMenu.getKey();}},
+        {"Move Left", []         {optionsMenu.getKey();}},
         {"Move Right", []        {optionsMenu.getKey();}},
 }, [] { game_state = MENU_STATE;}, WHITE, GRAY, 40.0f, {0.4f, 0.4f}, {0.0f, 0.05f});
 
 MultilineText pauseMenuTitle("Bear It Out\neven to the\nEdge of Doom", {0.0f, 0.075f}, RED, 70.0f, {0.5f, 0.2f});
 Menu pauseMenu({
-                       {"Continue",  [] {game_state = GAME_STATE;}},
-                       {"Restart",   [] {LevelManager::load(); game_state = GAME_STATE; player.kill();}},
-                       {"Main menu", [] {game_state = MENU_STATE; LevelManager::reset();}}
-               }, [] { game_state = GAME_STATE;}, WHITE, GRAY, 50.0f, {0.5f, 0.6f}, {0.0f, 0.075f});
+       {"Continue",  [] {game_state = GAME_STATE;}},
+       {"Restart",   [] {LevelManager::load(); game_state = GAME_STATE; player.kill();}},
+       {"Main menu", [] {game_state = MENU_STATE; LevelManager::reset();}}
+}, [] { game_state = GAME_STATE;}, WHITE, GRAY, 50.0f, {0.5f, 0.6f}, {0.0f, 0.075f});
 /* Forward Declarations */
 
 // GRAPHICS_H

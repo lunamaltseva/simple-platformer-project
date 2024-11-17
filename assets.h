@@ -147,6 +147,9 @@ void load_sounds() {
 
     coin_sound     = LoadSound("data/sounds/coin.wav");
     exit_sound     = LoadSound("data/sounds/exit.wav");
+    death_sound    = LoadSound("data/sounds/death.ogg");
+    key_sound      = LoadSound("data/sounds/key.ogg");
+    air_jump_sound = LoadSound("data/sounds/air_jump.ogg");
 
     theme          = LoadMusicStream("data/music/theme.ogg");
     main_theme     = LoadMusicStream("data/music/main.ogg");

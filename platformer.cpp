@@ -43,6 +43,7 @@ void update_game() {
             else if ((IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W) || IsKeyPressed(KEY_SPACE)) && player.get_coins() > 0) {
                 player.set_y_velocity(-JUMP_STRENGTH);
                 player.lose_coins(1);
+                PlaySound(air_jump_sound);
             }
 
             player.update();

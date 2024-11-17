@@ -40,7 +40,7 @@ void Player::update() {
     else if (is_colliding(pos, Level::KEY)) {
         get_collider(pos, Level::KEY) = ' ';
         keys[LevelManager::get_index()]++;
-        PlaySound(coin_sound);
+        PlaySound(key_sound);
     }
     else if (is_colliding(pos, Level::EXIT)) {
         if (LevelManager::getInstance()->keys_total() <= keys[LevelManager::get_index()]) {
