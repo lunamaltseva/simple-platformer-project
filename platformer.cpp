@@ -7,19 +7,66 @@
 #include "assets.h"
 #include "utilities.h"
 
-void update_game() {
+class Game {
+public:
+    Game();
+    ~Game();
+
+    void update();
+    void draw();
+};
+
+int main() {
+    SetConfigFlags(FLAG_VSYNC_HINT);
+    InitWindow(GetScreenWidth(), GetScreenHeight(), "Platformer");
+    SetTargetFPS(60);
+    ToggleFullscreen();
+    HideCursor();
+    InitAudioDevice();
+
+    Game Quixote;
+
+    while (!WindowShouldClose()) {
+        ClearBackground(BLACK);
+        BeginDrawing();
+
+        Quixote.update();
+        Quixote.draw();
+
+        EndDrawing();
+    }
+
+    return 0;
+}
+
+Game::Game() {
+    InitAudioDevice();
+
+    LevelManager::add(LEVEL_1);
+    LevelManager::add(LEVEL_2);
+    LevelManager::add(LEVEL_3);
+
+    load_fonts();
+    load_images();
+    load_sounds();
+
+    LevelManager::load();
+    SetExitKey(0);
+}
+
+void Game::update() {
     game_frame++;
 
     switch (game_state) {
-            case INTRO_STATE:
-                if (!intro.draw() || IsKeyPressed(KEY_ENTER)) {
-                    game_state = MENU_STATE;
-                    game_frame = 0;
-                }
+        case INTRO_STATE:
+            if (!intro.draw() || IsKeyPressed(KEY_ENTER)) {
+                game_state = MENU_STATE;
+                game_frame = 0;
+            }
             play(theme);
             break;
 
-            case GAME_STATE:
+        case GAME_STATE:
             play(game);
             ElectroManager::update();
 
@@ -66,8 +113,8 @@ void update_game() {
         case YOU_DIED_STATE:
             play(idle);
             if (IsKeyPressed(KEY_ENTER)) {
-                LevelManager::load();
                 game_state = GAME_STATE;
+                LevelManager::load();
             }
             break;
 
@@ -76,8 +123,8 @@ void update_game() {
             if (IsKeyPressed(KEY_ENTER)) {
                 player.reset();
                 LevelManager::reset();
-                LevelManager::load();
                 game_state = GAME_STATE;
+                LevelManager::load();
             }
             break;
 
@@ -91,7 +138,7 @@ void update_game() {
     }
 }
 
-void draw_game() {
+void Game::draw() {
     switch(game_state) {
         case MENU_STATE:
             play(main_theme);
@@ -143,34 +190,7 @@ void draw_game() {
     }
 }
 
-int main() {
-    SetConfigFlags(FLAG_VSYNC_HINT);
-    InitWindow(GetScreenWidth(), GetScreenHeight(), "Platformer");
-    SetTargetFPS(60);
-    ToggleFullscreen();
-    HideCursor();
-    InitAudioDevice();
-
-    LevelManager::add(LEVEL_1);
-    LevelManager::add(LEVEL_2);
-    LevelManager::add(LEVEL_3);
-
-    load_fonts();
-    load_images();
-    load_sounds();
-    LevelManager::load();
-    SetExitKey(0);
-
-    while (!WindowShouldClose()) {
-        ClearBackground(BLACK);
-        BeginDrawing();
-
-        update_game();
-        draw_game();
-
-        EndDrawing();
-    }
-
+Game::~Game() {
     LevelManager::unload();
     unload_sounds();
     unload_images();
@@ -178,6 +198,4 @@ int main() {
 
     CloseAudioDevice();
     CloseWindow();
-
-    return 0;
 }

@@ -99,7 +99,7 @@ Text death_title = {
 };
 
 Text death_subtitle = {
-    "Press Enter to try again",
+    "Press Enter to try again.",
     WHITE,
     50.0f,
     {0.50f, 0.65f}

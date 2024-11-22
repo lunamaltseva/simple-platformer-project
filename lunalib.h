@@ -195,7 +195,7 @@ public:
 
     static void load(size_t offset = 0);
     static void unload();
-    static void reset() { index = 0; unload(); }
+    static void reset() { index = 0; }
     static void forceComplete();
     static size_t get_index() { return index; }
     static size_t get_size()  { return levels.size(); }

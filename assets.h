@@ -140,7 +140,6 @@ void draw_sprite(sprite &sprite, Vector2 pos, float width, float height) {
 }
 
 void load_sounds() {
-    InitAudioDevice();
     scroll         = LoadSound("data/sounds/scroll.ogg");
     forward        = LoadSound("data/sounds/click.ogg");
     backout        = LoadSound("data/sounds/backout.ogg");
