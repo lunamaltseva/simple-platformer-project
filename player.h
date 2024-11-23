@@ -26,6 +26,10 @@ void move_player_horizontally(float delta) {
 }
 
 void update_player() {
+    if (is_colliding({player_pos.x, player_pos.y - 0.1f}, WALL) && player_y_velocity < 0) {
+        player_y_velocity = 0.05;
+    }
+
     // In THIS very order: first add velocity to position, then gravity to velocity
     // Why? I don't know! But it is glitchy otherwise.
     player_pos.y += player_y_velocity;
