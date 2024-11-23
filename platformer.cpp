@@ -5,7 +5,8 @@
 #include "player.h"
 #include "graphics.h"
 #include "assets.h"
-#include "utilities.h"
+#include "lunalib_func.h"
+#include "enemy.h"
 
 class Game {
 public:
@@ -113,7 +114,7 @@ void Game::update() {
         case YOU_DIED_STATE:
             play(idle);
             if (IsKeyPressed(KEY_ENTER)) {
-                game_state = GAME_STATE;
+                game_state = (player.get_lives() <= 0 ? GAME_OVER_STATE : GAME_STATE);
                 LevelManager::load();
             }
             break;
@@ -184,7 +185,7 @@ void Game::draw() {
 
         case GAME_OVER_STATE:
             game_over_title.draw();
-            death_subtitle.draw();
+            game_over_subtitle.draw();
             game_frame = 0;
             break;
     }

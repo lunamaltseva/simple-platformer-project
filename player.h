@@ -15,8 +15,10 @@ void Player::move_horizontally(float delta) {
         is_looking_forward = delta > 0;
         is_moving = true;
     }
-    else
+    else {
         pos.x = roundf(pos.x);
+        is_looking_forward = delta > 0;
+    }
 }
 
 void Player::update() {
@@ -56,5 +58,18 @@ void Player::update() {
         player.kill();
     }
 }
+
+bool Player::is_player_on_ground() {
+    is_in_air = is_colliding({pos.x, pos.y + 0.1f}, Level::WALL);
+    return is_in_air;
+}
+
+void Player::kill() {
+    lives-=1;
+    keys[LevelManager::get_index()] = 0;
+    coins[LevelManager::get_index()] = 0;
+    game_state = YOU_DIED_STATE;
+    PlaySound(death_sound);
+};
 
 #endif //PLAYER_H

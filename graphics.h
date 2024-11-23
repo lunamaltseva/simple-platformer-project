@@ -4,42 +4,6 @@
 #include "globals.h"
 #include <iomanip>
 
-void Text::draw() {
-    dimensions = MeasureTextEx(*font, text.c_str(), size*((float)GetScreenHeight()/1080), spacing);
-
-    Vector2 pos = {
-            (screen_size.x * offsetPercent.x) - (0.5f * dimensions.x),
-            (screen_size.y * offsetPercent.y) - (0.5f * dimensions.y)
-    };
-    DrawTextEx(*font, text.c_str(), pos, dimensions.y, spacing, color);
-}
-
-void MultilineText::draw() {
-    for (int i = 0; i < lines.size(); i++) {
-        Text(lines[i], color, size, {offsetPercent.x+dOffset.x*i, offsetPercent.y+dOffset.y*i}, spacing, font).draw();
-    }
-}
-
-void Prompt::draw() {
-    Vector2 size = {0,0};
-    size.y = title.size +(contents.dOffset.y * screen_size.y * static_cast<float>(contents.lines.size()));
-    for (auto &el : contents.lines) {
-        if (MeasureTextEx(*contents.font, el.c_str(), contents.size, contents.spacing).x > size.x)
-            size.x = MeasureTextEx(*contents.font, el.c_str(), contents.size, contents.spacing).x;
-    }
-    Vector2 sizePercent = {((screen_size.x - size.x) * 0.5f) / screen_size.x, ((screen_size.y - size.y) * 0.5f) / screen_size.y};
-    title.reposition({0.5f, sizePercent.y});
-    contents.reposition({0.5f, sizePercent.y + ((title.size + 30.0f) / screen_size.y)});
-    OK.reposition({0.5f, ((size.y + screen_size.y) * 0.52f) / screen_size.y});
-
-    DrawRectangle((screen_size.x - size.x) * 0.5f - 80.0f, (screen_size.y - size.y) * 0.5f - 80.0f, size.x + 160.0f, size.y + 160.0f, BLACK);
-    DrawRectangleLinesEx({(screen_size.x - size.x) * 0.5f - 80.0f, (screen_size.y - size.y) * 0.5f - 80.0f, size.x + 160.0f, size.y + 160.0f}, 5.0f, WHITE);
-
-    title.draw();
-    contents.draw();
-    OK.draw();
-}
-
 void derive_graphics_metrics_from_loaded_level() {
     Level* level = LevelManager::getInstance();
 

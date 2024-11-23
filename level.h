@@ -3,14 +3,6 @@
 
 #include "globals.h"
 
-char& Level::get_cell(size_t row, size_t column) {
-    return data[row * columns + column];
-}
-
-void Level::set_cell(size_t row, size_t column, char cell) {
-    data[row * columns + column] = cell;
-}
-
 bool is_colliding(Vector2 pos, char look_for) {
     Level* level = LevelManager::getInstance();
     Rectangle player_hitbox = {pos.x, pos.y, 1.0f, 1.0f};
@@ -23,18 +15,6 @@ bool is_colliding(Vector2 pos, char look_for) {
                     return true;
                 }
             }
-        }
-    }
-    return false;
-}
-
-bool ElectroManager::is_colliding_enemy(Vector2 pos) {
-    Rectangle player_hitbox = {pos.x, pos.y, 1.0f, 1.0f};
-
-    for (auto electro : arr) {
-        Rectangle enemy_hitbox = {electro.x, electro.y, 1.0f, 1.0f};
-        if (CheckCollisionRecs(player_hitbox, enemy_hitbox)) {
-            return true;
         }
     }
     return false;
@@ -65,6 +45,7 @@ void LevelManager::load(size_t offset) {
 
     if (index >= get_size()) {
         game_state = ENDING_STATE;
+        game_frame = 0;
         player.reset();
         index = 0;
         return;

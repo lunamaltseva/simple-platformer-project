@@ -42,7 +42,7 @@ char LEVEL_2_DATA[] = {
 Level LEVEL_2 = {
         13, 21,
         LEVEL_2_DATA,
-        20,
+        60,
         1
 };
 
@@ -65,7 +65,7 @@ char LEVEL_3_DATA[] = {
 Level LEVEL_3 = {
         13, 21,
         LEVEL_3_DATA,
-        10
+        30
 };
 
 /* Player data */
@@ -111,6 +111,14 @@ Text game_over_title = {
     100.0f,
     {0.50f, 0.50f},
 };
+
+Text game_over_subtitle = {
+        "You ran out of lives! Press Enter to try again.",
+        WHITE,
+        50.0f,
+        {0.50f, 0.65f}
+};
+
 
 /* Images and Sprites */
 
@@ -175,7 +183,17 @@ Music main_theme;
 Music game;
 Music idle;
 
-/* Victory Menu Background */
+enum game_state {
+    INTRO_STATE,
+    MENU_STATE,
+    GAME_STATE,
+    PAUSED_STATE,
+    YOU_DIED_STATE,
+    GAME_OVER_STATE,
+    OPTIONS_STATE,
+    ENDING_STATE
+};
+game_state game_state = INTRO_STATE;
 
 /* Game States */
 
