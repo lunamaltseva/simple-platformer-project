@@ -70,6 +70,11 @@ void Player::kill() {
     coins[LevelManager::get_index()] = 0;
     game_state = YOU_DIED_STATE;
     PlaySound(death_sound);
+}
+
+void Player::respawn() {
+    keys[LevelManager::get_index()] = 0;
+    coins[LevelManager::get_index()] = 0;
 };
 
 #endif //PLAYER_H

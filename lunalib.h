@@ -168,6 +168,7 @@ public:
     void draw();
     void reset() {lives = 3; keys.clear(); coins.clear(); for(int i = 0; i < 10; i++) {coins.push_back(0); keys.push_back(0);}}
     void kill();
+    void respawn();
     size_t get_lives() {return lives;}
     size_t get_coins() {size_t sum = 0; for (auto v : coins) sum+=v; return sum;}
     size_t get_keys()  {return keys[LevelManager::get_index()];}

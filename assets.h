@@ -150,10 +150,10 @@ void load_sounds() {
     key_sound      = LoadSound("data/sounds/key.ogg");
     air_jump_sound = LoadSound("data/sounds/air_jump.ogg");
 
-    theme          = LoadMusicStream("data/music/theme.ogg");
-    main_theme     = LoadMusicStream("data/music/main.ogg");
-    game           = LoadMusicStream("data/music/game.ogg");
-    idle           = LoadMusicStream("data/music/idle.ogg");
+    theme          = LoadMusicStream("data/music/intro.mp3");
+    main_theme     = LoadMusicStream("data/music/main.mp3");
+    game           = LoadMusicStream("data/music/main.mp3");
+    idle           = LoadMusicStream("data/music/idle.mp3");
 }
 
 void unload_sounds() {

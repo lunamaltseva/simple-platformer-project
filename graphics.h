@@ -44,7 +44,7 @@ void draw_game_overlay() {
     score.draw();
 
     float heart_size = 60 * screen_scale;
-    Vector2 hearts_position{(screen_size.x - heart_size * 3) / 2, screen_size.y - heart_size};
+    Vector2 hearts_position{(screen_size.x - heart_size * (float) player.get_lives()) / 2, screen_size.y - heart_size};
     for (int i = 0; i < player.get_lives(); i++) {
         draw_image(heart_image, hearts_position, heart_size);
         hearts_position.x += heart_size;
