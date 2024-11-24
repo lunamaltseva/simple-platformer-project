@@ -113,6 +113,7 @@ void Game::update() {
 
         case YOU_DIED_STATE:
             play(idle);
+            player.update_gravity();
             if (IsKeyPressed(KEY_ENTER)) {
                 game_state = (player.get_lives() <= 0 ? GAME_OVER_STATE : GAME_STATE);
                 LevelManager::load();
@@ -142,7 +143,7 @@ void Game::update() {
 void Game::draw() {
     switch(game_state) {
         case MENU_STATE:
-            play(main_theme);
+            play(game);
             if (game_frame != 0) main_menu.run();
             main_menu_byline.draw();
             main_menu_title.draw();
@@ -156,7 +157,7 @@ void Game::draw() {
             break;
 
         case OPTIONS_STATE:
-            play(main_theme);
+            play(game);
             main_menu.draw();
             main_menu_byline.draw();
             main_menu_title.draw();

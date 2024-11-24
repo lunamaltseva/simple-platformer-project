@@ -22,17 +22,7 @@ void Player::move_horizontally(float delta) {
 }
 
 void Player::update() {
-    if (is_colliding({pos.x, pos.y - 0.1f}, Level::WALL) && y_velocity < 0) {
-        y_velocity = 0.05;
-    }
-    pos.y += y_velocity;
-    y_velocity += GRAVITY_FORCE;
-
-    is_in_air = !is_colliding({pos.x, pos.y + 0.1f}, Level::WALL);
-    if (!is_in_air) {
-        y_velocity = 0;
-        pos.y = roundf(pos.y);
-    }
+    update_gravity();
 
     if (is_colliding(pos, Level::COIN)) {
         get_collider(pos, Level::COIN) = ' ';
@@ -56,6 +46,21 @@ void Player::update() {
 
     if (ElectroManager::is_colliding_enemy(pos)) {
         player.kill();
+    }
+}
+
+void Player::update_gravity() {
+    if (is_colliding({pos.x, pos.y - 0.1f}, Level::WALL) && y_velocity < 0) {
+        y_velocity = 0.05;
+    }
+
+    pos.y += y_velocity;
+    y_velocity += GRAVITY_FORCE;
+
+    is_in_air = !is_colliding({pos.x, pos.y + 0.1f}, Level::WALL);
+    if (!is_in_air) {
+        y_velocity = 0;
+        pos.y = roundf(pos.y);
     }
 }
 

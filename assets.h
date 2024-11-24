@@ -151,7 +151,6 @@ void load_sounds() {
     air_jump_sound = LoadSound("data/sounds/air_jump.ogg");
 
     theme          = LoadMusicStream("data/music/intro.mp3");
-    main_theme     = LoadMusicStream("data/music/main.mp3");
     game           = LoadMusicStream("data/music/main.mp3");
     idle           = LoadMusicStream("data/music/idle.mp3");
 }

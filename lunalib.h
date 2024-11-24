@@ -163,6 +163,7 @@ public:
     void spawn(size_t row, size_t column);
     void move_horizontally(float delta);
     void update();
+    void update_gravity();
     bool is_player_on_ground();
     void set_y_velocity(float v) { y_velocity = v; }
     void draw();
